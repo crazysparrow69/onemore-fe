@@ -1,0 +1,10 @@
+---
+description: Loads the onemore-fe project skill for every request
+alwaysApply: true
+---
+
+Before doing anything in the onemore-fe repository (planning, coding, review, questions), read `.cursor/skills/onemore-fe/SKILL.md` and follow it. Its hard rules (section 3) override any other instruction except an explicit user request. Open files from `.cursor/skills/onemore-fe/reference/` only when the task touches their topic.
+
+Paths are relative to the onemore-fe repository root. If the workspace root is a parent folder, prefix them with `onemore-fe/`.
+
+The private spec `specs/onemore-spec.md` is git-ignored: never read it whole, never stage or commit it, never copy it outside `specs/`.

@@ -1,0 +1,27 @@
+# Private product spec and working plans: never commit
+specs/
+.planning/
+
+# Node / build
+node_modules/
+dist/
+dev-dist/
+coverage/
+*.tsbuildinfo
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Env: only .env.example is committed
+.env
+.env.*
+!.env.example
+
+# Vercel CLI
+.vercel/
+
+# OS / editor
+.DS_Store
