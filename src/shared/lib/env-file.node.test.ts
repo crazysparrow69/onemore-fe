@@ -14,6 +14,11 @@ describe('.env.example', () => {
       });
 
     expect(pairs.map(([key]) => key)).toEqual(ENV_KEYS);
-    expect(Object.fromEntries(pairs)).toEqual({ PORT: '3000' });
+    expect(Object.fromEntries(pairs)).toEqual({
+      PORT: '3000',
+      API_URL: 'http://localhost:3001',
+      VITE_NEON_AUTH_URL:
+        'https://example.neonauth.eu-central-1.aws.neon.tech/neondb/auth',
+    });
   });
 });

@@ -30,7 +30,8 @@ Chat language: Russian. Code, comments, identifiers, commit messages, docs, i18n
 | UI | Tailwind + shadcn/ui |
 | Dates | date-fns |
 | i18n | react-i18next, from day one |
-| Auth | Neon Auth SDK `@neondatabase/auth` (email + Google) |
+| Auth | Neon Auth SDK `@neon/neon-js` (`createAuthClient` from `@neon/neon-js/auth`; email + Google) |
+| HTTP | axios, only inside `src/shared/api` |
 | Tests | Vitest + jsdom + Testing Library (unit), Playwright (e2e "record a workout" in a mobile viewport) |
 | Lint | ESLint flat config + type-aware typescript-eslint (`no-floating-promises` on), Prettier |
 | Errors | Sentry (EU region), from phase 8 |
@@ -48,7 +49,7 @@ Feature-level detail, roadmap, phases, open questions: [reference/scope-and-stat
 ## 3. Hard rules (violating any of these is a bug)
 
 **API and contracts**
-1. Call the API only through the shared client in `src/shared/api` using relative `/api/...` paths. Never hardcode a Cloud Run URL, never call `fetch` from a component or feature directly, no CORS setup. Paths are by domain, not by service (table in [reference/api-and-auth.md](reference/api-and-auth.md)).
+1. Call the API only through the shared client in `src/shared/api` using relative `/api/...` paths. Never hardcode a Cloud Run URL, never call `fetch` or `axios` from a component or feature directly, no CORS setup. Paths are by domain, not by service (table in [reference/api-and-auth.md](reference/api-and-auth.md)).
 2. Never import from `onemore-be`. Request/response types and Zod form schemas are written by hand from the backend's committed `openapi.json`. Never invent an endpoint, field, query param, or status code: if the backend does not have it, stop and say it is a backend task first (deploy order: backend, then web).
 3. `GET` requests carry parameters only in the query string. Never send `userId`/`ownerId` from the client to identify the current user: the backend takes it from the JWT.
 

@@ -13,8 +13,37 @@ const port = z.string(required).transform((value, ctx) => {
   return Number(value);
 });
 
+const httpUrl = z.string(required).refine(
+  (value) => {
+    try {
+      const url = new URL(value);
+      return (
+        (url.protocol === 'http:' || url.protocol === 'https:') &&
+        url.hostname.length > 0
+      );
+    } catch {
+      return false;
+    }
+  },
+  { message: 'must be an http(s) URL' },
+);
+
+const httpsUrl = z.string(required).refine(
+  (value) => {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' && url.hostname.length > 0;
+    } catch {
+      return false;
+    }
+  },
+  { message: 'must be an https URL' },
+);
+
 export const envSchema = z.object({
   PORT: port,
+  API_URL: httpUrl,
+  VITE_NEON_AUTH_URL: httpsUrl,
 });
 
 export const ENV_KEYS = Object.keys(envSchema.shape);

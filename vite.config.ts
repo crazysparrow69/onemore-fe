@@ -68,7 +68,12 @@ export default defineConfig(({ mode }) => {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
     },
-    server: { port: env.PORT },
+    server: {
+      port: env.PORT,
+      proxy: {
+        '/api': { target: env.API_URL, changeOrigin: true },
+      },
+    },
     preview: { port: env.PORT },
   };
 });

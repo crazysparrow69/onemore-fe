@@ -93,4 +93,4 @@ const form = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
 - API mocking (MSW) is NOT decided: ask before adding.
 
 ## Anti-patterns (reject in review)
-`any` / `as` on API data · `fetch` outside `shared/api` · data fetching in `useEffect` · server data in Zustand · hardcoded user-visible strings · lb or local units sent to the API · `new Date().toISOString().slice(0, 10)` as a local date · one request per exercise for hints · polling · inline `eslint-disable` · new dependency not in the plan.
+`any` / `as` on API data · `fetch`/`axios` outside `shared/api` · data fetching in `useEffect` · server data in Zustand · hardcoded user-visible strings · lb or local units sent to the API · `new Date().toISOString().slice(0, 10)` as a local date · one request per exercise for hints · polling · inline `eslint-disable` · new dependency not in the plan.

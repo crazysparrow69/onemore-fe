@@ -20,6 +20,8 @@ permissions:
 # Required by the Zod env schema. Not a secret. Real environment wins over `.env`.
 env:
   PORT: '3000'
+  API_URL: http://localhost:3001
+  VITE_NEON_AUTH_URL: https://auth.example.test/neondb/auth
 
 # A newer commit cancels the older run of the same event and branch. The event
 # name is part of the key so a `push` run never cancels the `pull_request` run

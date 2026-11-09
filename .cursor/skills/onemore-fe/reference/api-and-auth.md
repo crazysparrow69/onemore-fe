@@ -13,7 +13,7 @@ Browser -> Vercel (same domain) -> `vercel.json` rewrites by path prefix -> publ
 
 - Prefixes are by domain: moving a domain to another service changes only `vercel.json` and the Vite proxy, never app code.
 - `/internal/*` is backend-to-backend only. Never call it and never add it to rewrites.
-- Locally the Vite dev server proxies `/api/*` to the local services with the SAME prefix table as `vercel.json` (core-service listens on `PORT` from its `.env`, default `8080`). Keep both tables in sync in the same change.
+- Locally the Vite dev server proxies `/api` to `API_URL` (core-service). The browser still calls relative `/api/...`. core-service keeps the `/api` prefix, so nothing is stripped. Keep the proxy and `vercel.json` on the same paths.
 - Each service exposes `GET /health` (no DB, returns `version`). The web may call it only for the app-open warm-up (rule 15).
 
 ## Contract
@@ -24,17 +24,17 @@ Browser -> Vercel (same domain) -> `vercel.json` rewrites by path prefix -> publ
 - Error responses use one shared error shape from backend `packages/nest-common` (not implemented yet). The API client parses it once into one typed error; features never parse raw responses.
 
 ## Shared API client (`src/shared/api`)
-- One thin wrapper over `fetch`: base path `/api`, JSON in/out, `Authorization: Bearer <JWT>` from the Neon Auth SDK on every call, typed error on non-2xx.
+- One thin wrapper over an axios instance: base path `/api`, JSON in/out, `Authorization: Bearer <JWT>` from the Neon Auth SDK on every call, typed error on non-2xx.
 - On 401: get a fresh token from the SDK and retry once; if still 401, go to the sign-in flow. 403 is shown as an error, not retried.
 - `GET` params serialized into the query string (arrays as repeated params unless `openapi.json` says otherwise).
 - Mutations that create records carry a client-generated UUIDv7 id. Retries reuse the same id and body.
 - No retries for non-idempotent requests without a client id. TanStack Query retry stays at its default for queries only.
 
 ## Auth (Neon Auth = managed Better Auth)
-- Sign-in by email + password and by Google, through `@neondatabase/auth`. The SDK owns the session and refreshes the 15-minute JWT itself.
-- The backend verifies the JWT via JWKS and takes `userId` from `sub`. The web never sends a user id to identify itself and never decodes the JWT for authorization decisions.
-- JWT has no custom claims: roles, onboarding flag, units, language, time zone come from `GET /api/me` (core), not from the token.
-- Route guard: unauthenticated users go to sign-in; authenticated users without the onboarding flag go to onboarding.
+- Sign-in and sign-up by email + password, and sign-in by Google, through `@neon/neon-js` (`createAuthClient` from `@neon/neon-js/auth`, vanilla adapter with `credentials: 'include'`). The SDK talks to Neon Auth directly. The web has no sign-in or sign-up API of its own. The SDK owns the session cookie. The 15-minute JWT comes from the client's `token()` call (`GET /token`), not from `session.token` (that value is the opaque session id).
+- The backend verifies the JWT via JWKS and takes `userId` from `sub`. A user token with the wrong `aud` is 401. The web never sends a user id to identify itself and never decodes the JWT for authorization decisions.
+- `GET /api/me` returns `email` and `name` from the JWT and `role`, `language`, `timeZone` from `core.users`. There is no onboarding flag and no units column yet. The first `GET` that answers 404 `USER_NOT_FOUND` is followed by one `PUT /api/me` with language `en` and the browser time zone.
+- Route guard: no session goes to `/sign-in`; a session on `/sign-in` or `/sign-up` goes to `/`. Google returns to `/auth/callback`.
 - First request after idle can take 2-4 s (Cloud Run cold start + Neon wake). Show a loading state, never a timeout error below ~10 s.
 
 ## Key flows

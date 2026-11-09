@@ -31,7 +31,7 @@ export function UpdatePrompt() {
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             onClick={() => {
               setNeedRefresh(false);
             }}

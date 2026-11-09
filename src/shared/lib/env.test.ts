@@ -1,11 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { ENV_KEYS, loadValidatedEnv, validateEnv } from '@/shared/lib/env';
 
-const valid = { PORT: '3000' };
+const valid = {
+  PORT: '3000',
+  API_URL: 'http://localhost:3001',
+  VITE_NEON_AUTH_URL: 'https://auth.example.test/neondb/auth',
+};
 
 describe('validateEnv', () => {
   it('accepts a valid PORT and converts it to a number', () => {
-    expect(validateEnv(valid)).toEqual({ PORT: 3000 });
+    expect(validateEnv(valid)).toEqual({
+      PORT: 3000,
+      API_URL: 'http://localhost:3001',
+      VITE_NEON_AUTH_URL: 'https://auth.example.test/neondb/auth',
+    });
   });
 
   it('has no defaults: an empty environment reports every variable', () => {
@@ -31,6 +39,24 @@ describe('validateEnv', () => {
     expect(() => validateEnv({ PORT: '70000' })).toThrow(/PORT:/);
     expect(() => validateEnv({ PORT: '' })).toThrow(/PORT:/);
   });
+
+  it.each(['', 'not a url', 'ftp://localhost'])(
+    'throws on an invalid API_URL (%j)',
+    (value) => {
+      expect(() => validateEnv({ ...valid, API_URL: value })).toThrow(
+        /API_URL:/,
+      );
+    },
+  );
+
+  it.each(['', 'not a url', 'http://auth.example.test/auth'])(
+    'throws on an invalid VITE_NEON_AUTH_URL (%j)',
+    (value) => {
+      expect(() =>
+        validateEnv({ ...valid, VITE_NEON_AUTH_URL: value }),
+      ).toThrow(/VITE_NEON_AUTH_URL:/);
+    },
+  );
 
   it('treats an undefined value as missing', () => {
     expect(() => loadValidatedEnv({ PORT: undefined })).toThrow(
