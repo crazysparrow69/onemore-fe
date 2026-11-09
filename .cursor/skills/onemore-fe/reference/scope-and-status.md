@@ -34,8 +34,8 @@ v0.1 MVP -> v0.2 charts (est. 1RM, records, sets/muscle/week, weight trend) + we
 9 Real-life MVP check. 10 v0.2+.
 
 ## Open / undecided (ask the user, do not assume)
-- Analytics: PostHog EU is the candidate, limits unchecked (🟡). Do not add any analytics SDK until decided.
-- TanStack Router: file-based (generated route tree) or code-based routes. Decide in the phase 3 plan.
+- Analytics: PostHog EU is still the candidate, limits unchecked (🟡). Skipped in phase 3 by user decision. Do not add any analytics SDK until decided.
+- TanStack Router: code-based routes (decided in phase 3). No generated route tree and no router Vite plugin.
 - UUIDv7 generation: which library (or a small own helper). Decide when the first client id is needed.
 - API mocking (MSW): not decided. Component tests use Vitest + jsdom + Testing Library.
 - Locales beyond English and the list of languages for launch.

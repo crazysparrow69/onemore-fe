@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0a0a0a" />
+  <g transform="translate(256 256) scale(0.8) translate(-256 -256)">
+    <path fill="#fafafa" d="M248 112h72v288h-64V176l-56 36-28-44 76-56z" />
+  </g>
+</svg>

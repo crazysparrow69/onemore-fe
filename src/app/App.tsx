@@ -1,7 +1,6 @@
-export function App() {
-  return (
-    <main>
-      <h1>onemore</h1>
-    </main>
-  );
+import { RouterProvider } from '@tanstack/react-router';
+import { router, type AppRouter } from '@/app/router';
+
+export function App({ router: appRouter = router }: { router?: AppRouter }) {
+  return <RouterProvider router={appRouter} />;
 }
