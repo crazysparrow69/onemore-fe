@@ -16,7 +16,8 @@ function SignUpForm() {
   const signUp = useSignUp();
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signUpSchema),
-    mode: 'onChange',
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
     defaultValues: { email: '', password: '', username: '' },
   });
 
@@ -24,6 +25,7 @@ function SignUpForm() {
     <AuthScreen title={t('auth.signUp.title')}>
       <form
         className="flex flex-col gap-5"
+        noValidate
         onSubmit={(event) => {
           void form.handleSubmit((values) => {
             signUp.mutate(values);
@@ -54,12 +56,7 @@ function SignUpForm() {
           error={fieldError(t, form.formState.errors.username?.message)}
           {...form.register('username')}
         />
-        <Button
-          type="submit"
-          fullWidth
-          disabled={!form.formState.isValid}
-          loading={signUp.isPending}
-        >
+        <Button type="submit" fullWidth loading={signUp.isPending}>
           {t('auth.signUp.submit')}
         </Button>
       </form>

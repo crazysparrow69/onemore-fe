@@ -33,25 +33,27 @@ describe('SignInForm', () => {
     vi.mocked(signInWithEmail).mockReset();
   });
 
-  it('keeps submit disabled until the form is valid', async () => {
+  it('shows field errors only after submit and clears them when fixed', async () => {
     await renderSignIn();
 
-    const submit = await screen.findByRole('button', { name: 'Sign in' });
-    expect(submit).toHaveProperty('disabled', true);
+    fireEvent.change(await screen.findByLabelText('Email'), {
+      target: { value: 'not-an-email' },
+    });
+    expect(screen.queryByText('Enter a valid email address')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+
+    expect(await screen.findByText('Enter a valid email address')).toBeTruthy();
+    expect(
+      screen.getByText('Password must be at least 8 characters'),
+    ).toBeTruthy();
+    expect(signInWithEmail).not.toHaveBeenCalled();
 
     fireEvent.change(screen.getByLabelText('Email'), {
       target: { value: 'a@b.co' },
     });
-    fireEvent.change(screen.getByLabelText('Password'), {
-      target: { value: 'short' },
-    });
-    expect(submit).toHaveProperty('disabled', true);
-
-    fireEvent.change(screen.getByLabelText('Password'), {
-      target: { value: 'longpassword' },
-    });
     await waitFor(() => {
-      expect(submit).toHaveProperty('disabled', false);
+      expect(screen.queryByText('Enter a valid email address')).toBeNull();
     });
   });
 
@@ -65,11 +67,7 @@ describe('SignInForm', () => {
     fireEvent.change(screen.getByLabelText('Password'), {
       target: { value: 'longpassword' },
     });
-    const submit = screen.getByRole('button', { name: 'Sign in' });
-    await waitFor(() => {
-      expect(submit).toHaveProperty('disabled', false);
-    });
-    fireEvent.click(submit);
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
     await waitFor(() => {
       expect(signInWithEmail).toHaveBeenCalledWith(
@@ -94,12 +92,12 @@ describe('SignInForm', () => {
     fireEvent.change(screen.getByLabelText('Password'), {
       target: { value: 'longpassword' },
     });
-    const submit = screen.getByRole('button', { name: 'Sign in' });
-    await waitFor(() => {
-      expect(submit).toHaveProperty('disabled', false);
-    });
-    fireEvent.click(submit);
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
 
-    expect(await screen.findByText('Wrong email or password')).toBeTruthy();
+    expect(
+      await screen.findByText(
+        'The email or password you entered is incorrect. Please double-check and try again.',
+      ),
+    ).toBeTruthy();
   });
 });

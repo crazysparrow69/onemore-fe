@@ -10,7 +10,7 @@ export async function completeSocialSignIn(
   queryClient: QueryClient,
 ): Promise<never> {
   try {
-    const session = await getSession();
+    const session = (await getSession()) ?? (await getSession());
     if (!session) {
       toast.error(i18n.t('auth.errors.googleFailed'));
       throw redirect({ to: '/sign-in' });

@@ -33,10 +33,7 @@ describe('SignUpForm', () => {
     await appRouter.load();
     render(<App router={appRouter} queryClient={client} />);
 
-    const submit = await screen.findByRole('button', { name: 'Continue' });
-    expect(submit).toHaveProperty('disabled', true);
-
-    fireEvent.change(screen.getByLabelText('Email'), {
+    fireEvent.change(await screen.findByLabelText('Email'), {
       target: { value: 'a@b.co' },
     });
     fireEvent.change(screen.getByLabelText('Password'), {
@@ -45,11 +42,8 @@ describe('SignUpForm', () => {
     fireEvent.change(screen.getByLabelText('Username'), {
       target: { value: 'ada' },
     });
-    await waitFor(() => {
-      expect(submit).toHaveProperty('disabled', false);
-    });
 
-    fireEvent.click(submit);
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     await waitFor(() => {
       expect(signUpWithEmail).toHaveBeenCalledWith(
         {
@@ -61,7 +55,36 @@ describe('SignUpForm', () => {
       );
     });
     expect(
-      await screen.findByText('An account with this email already exists'),
+      await screen.findByText(
+        'An account with this email already exists. Try signing in instead.',
+      ),
     ).toBeTruthy();
+  });
+
+  it('shows field errors only after submit and clears them when fixed', async () => {
+    const history = createMemoryHistory({ initialEntries: ['/sign-up'] });
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    const appRouter = createAppRouter(history, client);
+    await appRouter.load();
+    render(<App router={appRouter} queryClient={client} />);
+
+    fireEvent.change(await screen.findByLabelText('Username'), {
+      target: { value: '   ' },
+    });
+    expect(screen.queryByText('Enter a username')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(await screen.findByText('Enter a username')).toBeTruthy();
+    expect(signUpWithEmail).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText('Username'), {
+      target: { value: 'ada' },
+    });
+    await waitFor(() => {
+      expect(screen.queryByText('Enter a username')).toBeNull();
+    });
   });
 });

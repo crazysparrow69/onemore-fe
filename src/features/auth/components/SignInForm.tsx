@@ -1,7 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { toast } from '@/shared/lib/toast';
 import { Button } from '@/shared/ui/button';
 import { Text } from '@/shared/ui/text';
 import { TextField } from '@/shared/ui/text-field';
@@ -11,19 +13,38 @@ import { fieldError } from '@/features/auth/components/field-error';
 import { GoogleSignInButton } from '@/features/auth/components/GoogleSignInButton';
 import { signInSchema, type SignInValues } from '@/features/auth/model/schema';
 
+function reportProviderError(message: string): void {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('error')) {
+    return;
+  }
+  toast.error(message);
+  params.delete('error');
+  params.delete('error_description');
+  const search = params.toString();
+  const next = `${window.location.pathname}${search.length > 0 ? `?${search}` : ''}${window.location.hash}`;
+  window.history.replaceState(window.history.state, '', next);
+}
+
 function SignInForm() {
   const { t } = useTranslation();
   const signIn = useSignIn();
   const form = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
-    mode: 'onChange',
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
     defaultValues: { email: '', password: '' },
   });
+
+  useEffect(() => {
+    reportProviderError(t('auth.errors.googleFailed'));
+  }, [t]);
 
   return (
     <AuthScreen title={t('auth.signIn.title')}>
       <form
         className="flex flex-col gap-5"
+        noValidate
         onSubmit={(event) => {
           void form.handleSubmit((values) => {
             signIn.mutate(values);
@@ -46,12 +67,7 @@ function SignInForm() {
           error={fieldError(t, form.formState.errors.password?.message)}
           {...form.register('password')}
         />
-        <Button
-          type="submit"
-          fullWidth
-          disabled={!form.formState.isValid}
-          loading={signIn.isPending}
-        >
+        <Button type="submit" fullWidth loading={signIn.isPending}>
           {t('auth.signIn.submit')}
         </Button>
       </form>

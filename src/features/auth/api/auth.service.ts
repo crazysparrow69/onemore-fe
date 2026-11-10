@@ -33,6 +33,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function isAbort(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError';
+}
+
 async function call<T>(
   run: () => Promise<T>,
   fallback: AuthErrorCode,
@@ -80,19 +84,32 @@ export async function signInWithEmail(input: {
 }
 
 export async function signInWithGoogle(): Promise<void> {
-  await call(async () => {
+  const callbackURL = `${window.location.origin}/auth/callback`;
+  try {
     const result = await getClient().signIn.social({
       provider: 'google',
-      callbackURL: `${window.location.origin}/auth/callback`,
+      callbackURL,
+      newUserCallbackURL: callbackURL,
+      errorCallbackURL: `${window.location.origin}/sign-in`,
+      disableRedirect: true,
     });
     if (result.error) {
       throw toAuthError(result.error, 'googleFailed');
     }
     const url = isRecord(result.data) ? result.data.url : undefined;
-    if (typeof url === 'string' && url.length > 0) {
-      window.location.assign(url);
+    if (typeof url !== 'string' || url.length === 0) {
+      throw new AuthError('googleFailed');
     }
-  }, 'googleFailed');
+    window.location.assign(url);
+  } catch (error) {
+    if (isAbort(error)) {
+      return;
+    }
+    if (error instanceof AuthError) {
+      throw error;
+    }
+    throw toAuthError(error, 'googleFailed');
+  }
 }
 
 export async function signOut(): Promise<void> {
