@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { createMemoryHistory } from '@tanstack/react-router';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '@/app/App';
 import { createAppRouter } from '@/app/router';
@@ -27,6 +27,22 @@ async function renderSignIn() {
   render(<App router={appRouter} queryClient={client} />);
 }
 
+function input(selector: string): HTMLInputElement {
+  const element = document.querySelector(selector);
+  if (!(element instanceof HTMLInputElement)) {
+    throw new Error(`Missing input ${selector}`);
+  }
+  return element;
+}
+
+function submitButton(): HTMLButtonElement {
+  const element = document.querySelector('button[type="submit"]');
+  if (!(element instanceof HTMLButtonElement)) {
+    throw new Error('Missing submit button');
+  }
+  return element;
+}
+
 describe('SignInForm', () => {
   beforeEach(() => {
     vi.mocked(getSession).mockResolvedValue(null);
@@ -35,39 +51,53 @@ describe('SignInForm', () => {
 
   it('shows field errors only after submit and clears them when fixed', async () => {
     await renderSignIn();
+    await waitFor(() => {
+      expect(input('input[type="email"]')).toBeInstanceOf(HTMLInputElement);
+    });
 
-    fireEvent.change(await screen.findByLabelText('Email'), {
+    fireEvent.change(input('input[type="email"]'), {
       target: { value: 'not-an-email' },
     });
-    expect(screen.queryByText('Enter a valid email address')).toBeNull();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
-
-    expect(await screen.findByText('Enter a valid email address')).toBeTruthy();
     expect(
-      screen.getByText('Password must be at least 8 characters'),
-    ).toBeTruthy();
+      input('input[type="email"]').getAttribute('aria-invalid'),
+    ).toBeNull();
+
+    fireEvent.click(submitButton());
+
+    await waitFor(() => {
+      expect(input('input[type="email"]').getAttribute('aria-invalid')).toBe(
+        'true',
+      );
+      expect(input('input[type="password"]').getAttribute('aria-invalid')).toBe(
+        'true',
+      );
+    });
     expect(signInWithEmail).not.toHaveBeenCalled();
 
-    fireEvent.change(screen.getByLabelText('Email'), {
+    fireEvent.change(input('input[type="email"]'), {
       target: { value: 'a@b.co' },
     });
     await waitFor(() => {
-      expect(screen.queryByText('Enter a valid email address')).toBeNull();
+      expect(
+        input('input[type="email"]').getAttribute('aria-invalid'),
+      ).toBeNull();
     });
   });
 
   it('submits the email and password', async () => {
     vi.mocked(signInWithEmail).mockResolvedValue(undefined);
     await renderSignIn();
+    await waitFor(() => {
+      expect(input('input[type="email"]')).toBeInstanceOf(HTMLInputElement);
+    });
 
-    fireEvent.change(await screen.findByLabelText('Email'), {
+    fireEvent.change(input('input[type="email"]'), {
       target: { value: 'a@b.co' },
     });
-    fireEvent.change(screen.getByLabelText('Password'), {
+    fireEvent.change(input('input[type="password"]'), {
       target: { value: 'longpassword' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    fireEvent.click(submitButton());
 
     await waitFor(() => {
       expect(signInWithEmail).toHaveBeenCalledWith(
@@ -85,19 +115,20 @@ describe('SignInForm', () => {
       new AuthError('invalidCredentials'),
     );
     await renderSignIn();
+    await waitFor(() => {
+      expect(input('input[type="email"]')).toBeInstanceOf(HTMLInputElement);
+    });
 
-    fireEvent.change(await screen.findByLabelText('Email'), {
+    fireEvent.change(input('input[type="email"]'), {
       target: { value: 'a@b.co' },
     });
-    fireEvent.change(screen.getByLabelText('Password'), {
+    fireEvent.change(input('input[type="password"]'), {
       target: { value: 'longpassword' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    fireEvent.click(submitButton());
 
-    expect(
-      await screen.findByText(
-        'The email or password you entered is incorrect. Please double-check and try again.',
-      ),
-    ).toBeTruthy();
+    await waitFor(() => {
+      expect(document.querySelector('[data-sonner-toast]')).toBeTruthy();
+    });
   });
 });

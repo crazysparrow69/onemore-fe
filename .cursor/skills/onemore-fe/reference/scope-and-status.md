@@ -33,12 +33,14 @@ v0.1 MVP -> v0.2 charts (est. 1RM, records, sets/muscle/week, weight trend) + we
 8 Launch prep: Sentry in web, warm-up `/health` calls on app open, runbook for Vercel rollback.
 9 Real-life MVP check. 10 v0.2+.
 
+## Decided
+- UI locales are English and Ukrainian. Ukrainian is the default; English is the fallback and the source of key types. The account `language` sent to `PUT /api/me` stays `en` until the backend language enum includes `uk`.
+
 ## Open / undecided (ask the user, do not assume)
 - Analytics: PostHog EU is still the candidate, limits unchecked (🟡). Skipped in phase 3 by user decision. Do not add any analytics SDK until decided.
 - TanStack Router: code-based routes (decided in phase 3). No generated route tree and no router Vite plugin.
 - UUIDv7 generation: which library (or a small own helper). Decide when the first client id is needed.
 - API mocking (MSW): not decided. Component tests use Vitest + jsdom + Testing Library.
-- Locales beyond English and the list of languages for launch.
 - Vercel: rewrite to two Cloud Run services, `Authorization` passthrough and proxy timeout are 🧪 not tested yet; Hobby is non-commercial only (trainer subscriptions would need Pro or other hosting).
 - free-exercise-db WebP total size vs the 100 MB Vercel CLI static limit: 🧪 not measured.
 - Vercel Deployment Protection on previews (previews call the prod API): to be configured.

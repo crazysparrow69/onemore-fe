@@ -29,7 +29,7 @@ Chat language: Russian. Code, comments, identifiers, commit messages, docs, i18n
 | Forms | React Hook Form + Zod (`@hookform/resolvers`) |
 | UI | Tailwind + shadcn/ui |
 | Dates | date-fns |
-| i18n | react-i18next, from day one |
+| i18n | react-i18next (JSON locales; default language `uk`), from day one |
 | Auth | Neon Auth SDK `@neon/neon-js` (`createAuthClient` from `@neon/neon-js/auth`; email + Google) |
 | HTTP | axios, only inside `src/shared/api` |
 | Tests | Vitest + jsdom + Testing Library (unit), Playwright (e2e "record a workout" in a mobile viewport) |
@@ -84,6 +84,7 @@ Rule details and rationale: [reference/api-and-auth.md](reference/api-and-auth.m
 - Layout: `src/app/` (router, providers, root layout), `src/features/<feature>/` (auth, onboarding, profile, exercises, workouts, calendar, nutrition), `src/shared/` (ui = shadcn, api, i18n, analytics, lib). Import direction: `app -> features -> shared`. `shared` never imports `features` or `app`; a feature uses another feature only through its `index.ts`.
 - Server data lives only in TanStack Query. Never copy query data into Zustand or `useState`, never fetch in `useEffect`. Query keys come from one factory per feature.
 - Forms: one Zod schema per form in the feature's `model/`, wired with `zodResolver`. Validation messages are i18n keys.
+- Tests assert behavior, not user-visible copy. Do not assert translated strings, labels, or toast text. See the Tests section in [reference/frontend-patterns.md](reference/frontend-patterns.md).
 - TypeScript: no `any`, no non-null `!` and no `as` casts on API data; narrow with types or Zod. Do not disable lint rules inline to make code pass.
 - Components: function components, named exports, one component per file, small and focused. shadcn primitives live in `src/shared/ui` and are composed, not forked per feature.
 - Match the style of neighbouring code. No unrelated refactors, no drive-by renames.
@@ -123,7 +124,7 @@ Phase: <n> · Spec refs: <headings>
 1. <exact file path> - <create|change> - <what> - props/signatures/types/Zod schema if non-trivial
 ## UI states (loading / empty / error / success, per screen)
 ## i18n keys to add (key -> English text)
-## Tests to write (file, name, what each asserts)
+## Tests to write (file, name, what each asserts; behavior only, never UI copy)
 ## Verify (exact commands that must pass + manual check in a 375 px viewport)
 ## Risks / open questions for the user
 ```

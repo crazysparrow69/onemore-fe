@@ -1,0 +1,76 @@
+{
+  "app": {
+    "name": "onemore"
+  },
+  "home": {
+    "title": "onemore",
+    "subtitle": "Workout and nutrition diary",
+    "signOut": "Sign out"
+  },
+  "auth": {
+    "or": "or",
+    "google": "Continue with Google",
+    "signIn": {
+      "title": "Sign in",
+      "email": "Email",
+      "emailPlaceholder": "example@gmail.com",
+      "password": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "submit": "Sign in",
+      "switch": "Don't have an account? Sign up"
+    },
+    "signUp": {
+      "title": "Sign up",
+      "email": "Email",
+      "emailPlaceholder": "example@gmail.com",
+      "password": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "username": "Username",
+      "usernamePlaceholder": "username",
+      "submit": "Continue",
+      "switch": "Already have an account? Sign in"
+    },
+    "toast": {
+      "signedUp": "Account created",
+      "signedIn": "Signed in",
+      "signedOut": "Signed out"
+    },
+    "errors": {
+      "invalidCredentials": "The email or password you entered is incorrect. Please double-check and try again.",
+      "emailTaken": "An account with this email already exists. Try signing in instead.",
+      "passwordTooShort": "Password must be 8-128 characters.",
+      "network": "Can't reach the server. Check your connection and try again.",
+      "googleFailed": "Couldn't sign in with Google. Please try again.",
+      "generic": "Something went wrong on our side. Please try again."
+    }
+  },
+  "validation": {
+    "email": "Enter a valid email address",
+    "passwordMin": "Password must be at least 8 characters",
+    "passwordMax": "Password must be at most 128 characters",
+    "username": "Enter a username",
+    "required": "This field is required"
+  },
+  "common": {
+    "loading": "Loading",
+    "retry": "Retry"
+  },
+  "errors": {
+    "generic": {
+      "title": "Something went wrong",
+      "description": "Please try again."
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "This page does not exist.",
+    "home": "Back to home"
+  },
+  "pwa": {
+    "update": {
+      "message": "A new version is available.",
+      "reload": "Reload",
+      "later": "Later"
+    }
+  }
+}

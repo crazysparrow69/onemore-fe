@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { createMemoryHistory } from '@tanstack/react-router';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '@/app/App';
 import { createAppRouter } from '@/app/router';
@@ -17,6 +17,32 @@ vi.mock('@/features/auth/api/auth.service', () => ({
   refreshAccessToken: vi.fn(() => Promise.resolve(null)),
 }));
 
+async function renderSignUp() {
+  const history = createMemoryHistory({ initialEntries: ['/sign-up'] });
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+  const appRouter = createAppRouter(history, client);
+  await appRouter.load();
+  render(<App router={appRouter} queryClient={client} />);
+}
+
+function input(selector: string): HTMLInputElement {
+  const element = document.querySelector(selector);
+  if (!(element instanceof HTMLInputElement)) {
+    throw new Error(`Missing input ${selector}`);
+  }
+  return element;
+}
+
+function submitButton(): HTMLButtonElement {
+  const element = document.querySelector('button[type="submit"]');
+  if (!(element instanceof HTMLButtonElement)) {
+    throw new Error('Missing submit button');
+  }
+  return element;
+}
+
 describe('SignUpForm', () => {
   beforeEach(() => {
     vi.mocked(getSession).mockResolvedValue(null);
@@ -25,25 +51,24 @@ describe('SignUpForm', () => {
 
   it('submits email, password and username, and toasts on failure', async () => {
     vi.mocked(signUpWithEmail).mockRejectedValue(new AuthError('emailTaken'));
-    const history = createMemoryHistory({ initialEntries: ['/sign-up'] });
-    const client = new QueryClient({
-      defaultOptions: { queries: { retry: false } },
+    await renderSignUp();
+    await waitFor(() => {
+      expect(input('input[autocomplete="username"]')).toBeInstanceOf(
+        HTMLInputElement,
+      );
     });
-    const appRouter = createAppRouter(history, client);
-    await appRouter.load();
-    render(<App router={appRouter} queryClient={client} />);
 
-    fireEvent.change(await screen.findByLabelText('Email'), {
+    fireEvent.change(input('input[type="email"]'), {
       target: { value: 'a@b.co' },
     });
-    fireEvent.change(screen.getByLabelText('Password'), {
+    fireEvent.change(input('input[type="password"]'), {
       target: { value: 'longpassword' },
     });
-    fireEvent.change(screen.getByLabelText('Username'), {
+    fireEvent.change(input('input[autocomplete="username"]'), {
       target: { value: 'ada' },
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.click(submitButton());
     await waitFor(() => {
       expect(signUpWithEmail).toHaveBeenCalledWith(
         {
@@ -53,38 +78,41 @@ describe('SignUpForm', () => {
         },
         expect.anything(),
       );
+      expect(document.querySelector('[data-sonner-toast]')).toBeTruthy();
     });
-    expect(
-      await screen.findByText(
-        'An account with this email already exists. Try signing in instead.',
-      ),
-    ).toBeTruthy();
   });
 
   it('shows field errors only after submit and clears them when fixed', async () => {
-    const history = createMemoryHistory({ initialEntries: ['/sign-up'] });
-    const client = new QueryClient({
-      defaultOptions: { queries: { retry: false } },
+    await renderSignUp();
+    await waitFor(() => {
+      expect(input('input[autocomplete="username"]')).toBeInstanceOf(
+        HTMLInputElement,
+      );
     });
-    const appRouter = createAppRouter(history, client);
-    await appRouter.load();
-    render(<App router={appRouter} queryClient={client} />);
 
-    fireEvent.change(await screen.findByLabelText('Username'), {
+    fireEvent.change(input('input[autocomplete="username"]'), {
       target: { value: '   ' },
     });
-    expect(screen.queryByText('Enter a username')).toBeNull();
+    expect(
+      input('input[autocomplete="username"]').getAttribute('aria-invalid'),
+    ).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.click(submitButton());
 
-    expect(await screen.findByText('Enter a username')).toBeTruthy();
+    await waitFor(() => {
+      expect(
+        input('input[autocomplete="username"]').getAttribute('aria-invalid'),
+      ).toBe('true');
+    });
     expect(signUpWithEmail).not.toHaveBeenCalled();
 
-    fireEvent.change(screen.getByLabelText('Username'), {
+    fireEvent.change(input('input[autocomplete="username"]'), {
       target: { value: 'ada' },
     });
     await waitFor(() => {
-      expect(screen.queryByText('Enter a username')).toBeNull();
+      expect(
+        input('input[autocomplete="username"]').getAttribute('aria-invalid'),
+      ).toBeNull();
     });
   });
 });

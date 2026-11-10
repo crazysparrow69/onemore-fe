@@ -9,7 +9,7 @@ src/app/                 router, providers, root layout
 src/features/<feature>/  auth, onboarding, profile, exercises, workouts, calendar, nutrition
 src/shared/ui/           shadcn/ui primitives
 src/shared/api/          API client, error type
-src/shared/i18n/         i18next setup, locale files
+src/shared/i18n/         i18next setup, locale JSON files
 src/shared/analytics/    (when analytics is decided)
 src/shared/lib/          units, dates, ids, small pure helpers
 src/test/                Vitest setup (cleanup after each test)
@@ -73,8 +73,10 @@ const form = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
 - Submit button disabled while pending; server errors shown inline.
 
 ## i18n
+- Locale files are JSON, one per language: `src/shared/i18n/locales/<lang>.json`. Key types come from `typeof` the imported `en.json` in `i18next.d.ts`. No comments or logic in locale files.
 - Keys are namespaced by feature: `workouts.finish.button`, `common.retry`, `validation.required`.
-- English is the base locale; every new key is added to every locale file in the same change.
+- English (`en.json`) is the base locale: key types come from it, and missing keys fall back to it. The default active language is Ukrainian (`uk`): `index.html` `lang` and the i18next `lng` option are `uk`.
+- Every new key is added to every locale file in the same change.
 - Dates and numbers formatted through `Intl` with the active language, not string concatenation.
 
 ## UI
@@ -89,8 +91,9 @@ const form = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
 
 ## Tests
 - Vitest + jsdom + Testing Library: component tests in `src/**/*.test.tsx` (import `describe`/`it`/`expect` from `vitest`; globals are off). Setup in `src/test/setup.ts` calls `cleanup` after each test. Also cover `shared/lib` (units, dates, ids), the workout draft store, Zod schemas, and query key factories when non-trivial.
+- Do not test user-visible copy. No assertion of a translated string, heading, button label, placeholder, or toast text, and no test whose only job is that a sentence is on screen. Wording lives in the locale JSON and can change without a behavior change. Assert behavior: a request was made, the route changed, a control is `aria-invalid`, a status region appeared or disappeared, an internal error string is not shown. Locate controls by role, input type, or `autocomplete`, not by the translated label.
 - Playwright: "record a workout" in a mobile viewport, run before releases and after API client changes, not on every PR.
 - API mocking (MSW) is NOT decided: ask before adding.
 
 ## Anti-patterns (reject in review)
-`any` / `as` on API data · `fetch`/`axios` outside `shared/api` · data fetching in `useEffect` · server data in Zustand · hardcoded user-visible strings · lb or local units sent to the API · `new Date().toISOString().slice(0, 10)` as a local date · one request per exercise for hints · polling · inline `eslint-disable` · new dependency not in the plan.
+`any` / `as` on API data · `fetch`/`axios` outside `shared/api` · data fetching in `useEffect` · server data in Zustand · hardcoded user-visible strings · tests that assert UI copy or translation strings · lb or local units sent to the API · `new Date().toISOString().slice(0, 10)` as a local date · one request per exercise for hints · polling · inline `eslint-disable` · new dependency not in the plan.

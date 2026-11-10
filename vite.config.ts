@@ -21,7 +21,8 @@ export default defineConfig(({ mode }) => {
         manifest: {
           name: 'onemore',
           short_name: 'onemore',
-          description: 'Workout and nutrition diary',
+          description: 'Щоденник тренувань і харчування',
+          lang: 'uk',
           start_url: '/',
           scope: '/',
           display: 'standalone',

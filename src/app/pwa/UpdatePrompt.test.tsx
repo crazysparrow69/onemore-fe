@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -28,21 +28,25 @@ describe('UpdatePrompt', () => {
   });
 
   it('renders nothing when no update is waiting', () => {
-    const { container } = render(<UpdatePrompt />);
+    render(<UpdatePrompt />);
 
-    expect(container.textContent).toBe('');
+    expect(screen.queryByRole('status')).toBeNull();
   });
 
   it('reloads on request and hides when postponed', () => {
     sw.needRefresh = true;
     render(<UpdatePrompt />);
 
-    expect(screen.getByText('A new version is available.')).toBeTruthy();
+    const status = screen.getByRole('status');
+    const [reload, later] = within(status).getAllByRole('button');
+    if (!reload || !later) {
+      throw new Error('Missing update actions');
+    }
 
-    fireEvent.click(screen.getByRole('button', { name: 'Reload' }));
+    fireEvent.click(reload);
     expect(sw.updateServiceWorker).toHaveBeenCalledWith(true);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Later' }));
-    expect(screen.queryByText('A new version is available.')).toBeNull();
+    fireEvent.click(later);
+    expect(screen.queryByRole('status')).toBeNull();
   });
 });
