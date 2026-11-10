@@ -1,4 +1,4 @@
-import { createAuthClient } from '@neon/neon-js/auth';
+import { createInternalNeonAuth } from '@neon/neon-js/auth';
 import {
   BetterAuthVanillaAdapter,
   type BetterAuthVanillaAdapterInstance,
@@ -14,19 +14,24 @@ export interface AuthSession {
   email: string;
 }
 
-type AuthClient = ReturnType<
-  typeof createAuthClient<BetterAuthVanillaAdapterInstance>
+type AuthNeon = ReturnType<
+  typeof createInternalNeonAuth<BetterAuthVanillaAdapterInstance>
 >;
+type AuthClient = AuthNeon['adapter'];
 
-let client: AuthClient | undefined;
+let neonAuth: AuthNeon | undefined;
 
-function getClient(): AuthClient {
-  client ??= createAuthClient(neonAuthUrl(), {
+function getNeonAuth(): AuthNeon {
+  neonAuth ??= createInternalNeonAuth(neonAuthUrl(), {
     adapter: BetterAuthVanillaAdapter({
       fetchOptions: { credentials: 'include' },
     }),
   });
-  return client;
+  return neonAuth;
+}
+
+function getClient(): AuthClient {
+  return getNeonAuth().adapter;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -134,35 +139,13 @@ export async function getSession(): Promise<AuthSession | null> {
   }
 }
 
-interface JwtReader {
-  token(): Promise<unknown>;
-}
-
-function isJwtReader(client: object): client is JwtReader {
-  return typeof Reflect.get(client, 'token') === 'function';
-}
-
-function jwtFrom(value: unknown): string | null {
-  if (typeof value !== 'object' || value === null || !('data' in value)) {
-    return null;
-  }
-  const data = value.data;
-  if (typeof data !== 'object' || data === null || !('token' in data)) {
-    return null;
-  }
-  const token = data.token;
-  return typeof token === 'string' && token.split('.').length === 3
-    ? token
-    : null;
+function normalizeJwt(token: string | null): string | null {
+  return token !== null && token.split('.').length === 3 ? token : null;
 }
 
 async function readToken(): Promise<string | null> {
-  const client = getClient();
-  if (!isJwtReader(client)) {
-    return null;
-  }
   try {
-    return jwtFrom(await client.token());
+    return normalizeJwt(await getNeonAuth().getJWTToken());
   } catch {
     return null;
   }
