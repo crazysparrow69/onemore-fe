@@ -34,7 +34,7 @@ Every variable in `.env.example` is required and has no default. `vite.config.ts
 cp .env.example .env
 ```
 
-`PORT` is the Vite dev and preview port (`3000`). It is not sent to the browser. A shell variable with the same name overrides `.env`. CI sets `PORT` in the workflow.
+`PORT` is the Vite dev and preview port (`5002`). On macOS, port 5000 is often taken by AirPlay Receiver. It is not sent to the browser. A shell variable with the same name overrides `.env`. CI sets `PORT` in the workflow.
 
 ## Git hooks
 

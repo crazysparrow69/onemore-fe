@@ -2,16 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { ENV_KEYS, loadValidatedEnv, validateEnv } from '@/shared/lib/env';
 
 const valid = {
-  PORT: '3000',
-  API_URL: 'http://localhost:3001',
+  PORT: '5002',
+  API_URL: 'http://localhost:5001',
   VITE_NEON_AUTH_URL: 'https://auth.example.test/neondb/auth',
 };
 
 describe('validateEnv', () => {
   it('accepts a valid PORT and converts it to a number', () => {
     expect(validateEnv(valid)).toEqual({
-      PORT: 3000,
-      API_URL: 'http://localhost:3001',
+      PORT: 5002,
+      API_URL: 'http://localhost:5001',
       VITE_NEON_AUTH_URL: 'https://auth.example.test/neondb/auth',
     });
   });

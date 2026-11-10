@@ -26,7 +26,7 @@ Jobs: `lint` (ESLint + Prettier `--check`) · `typecheck` · `test` (Vitest) · 
 
 ## Env
 - One Zod schema in `src/shared/lib/env.ts`. Every variable is required: no `.default()`. A missing or invalid value throws `Invalid environment: ...` and Vite does not start. A test checks that `.env.example` keys equal the schema keys.
-- `PORT` (currently `3000`) is the dev server and `vite preview` port. It is not a `VITE_` variable and is not in the client bundle. `vite.config.ts` loads `.env*` via `loadEnv` and lets the real environment win.
+- `PORT` (currently `5002`) is the dev server and `vite preview` port. It is not a `VITE_` variable and is not in the client bundle. `vite.config.ts` loads `.env*` via `loadEnv` and lets the real environment win.
 - Public client values, when they appear (Neon Auth URL, Sentry DSN, app version), are `VITE_*` in the same schema. App code reads them only through this module (`import.meta.env`), never directly.
 - Local: copy `.env.example` to `.env` (git-ignored; `.env.local` overrides it). CI sets `PORT` in the workflow. Vercel project env: public `VITE_*` only.
 
