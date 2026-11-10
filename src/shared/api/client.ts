@@ -28,7 +28,7 @@ export interface ApiClientDeps {
 }
 
 const errorBodySchema = z.object({
-  statusCode: z.number(),
+  statusCode: z.number().optional(),
   code: z.string(),
   message: z.string(),
   details: z.unknown().optional(),
@@ -100,7 +100,7 @@ function toApiError(error: {
     return new ApiError(response.status, 'HTTP_ERROR', 'Request failed');
   }
   return new ApiError(
-    parsed.data.statusCode,
+    parsed.data.statusCode ?? response.status,
     parsed.data.code,
     parsed.data.message,
     parsed.data.details,

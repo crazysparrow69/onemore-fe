@@ -8,6 +8,7 @@ import {
 import { describe, expect, it, vi } from 'vitest';
 import { createApiClient } from '@/shared/api/client';
 import { ApiError } from '@/shared/api/error';
+import { fetchCurrentUser } from '@/features/auth/api/me.service';
 
 function response(
   config: InternalAxiosRequestConfig,
@@ -160,6 +161,55 @@ describe('createApiClient', () => {
     if (error instanceof ApiError) {
       expect(error.details).toEqual([{ path: 'timeZone', message: 'Invalid' }]);
     }
+  });
+
+  it('keeps the error code when the body omits statusCode', async () => {
+    const client = createApiClient({
+      adapter: (config) =>
+        fail(config, 404, {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found',
+        }),
+      getAccessToken: () => Promise.resolve('token-1'),
+      refreshAccessToken: () => Promise.resolve(null),
+      onUnauthorized: vi.fn(),
+    });
+
+    await expect(client.get('/me')).rejects.toMatchObject({
+      status: 404,
+      code: 'USER_NOT_FOUND',
+      message: 'User not found',
+    });
+  });
+
+  it('bootstraps the current user from a 404 body without statusCode', async () => {
+    const user = {
+      id: 'user-1',
+      email: 'a@b.co',
+      name: 'Ada',
+      role: 'user',
+      language: 'en',
+      timeZone: 'Europe/Kyiv',
+      createdAt: '2026-01-01T00:00:00.000Z',
+    };
+    const client = createApiClient({
+      adapter: (config) => {
+        if (config.method?.toLowerCase() === 'put') {
+          return Promise.resolve(response(config, 200, user));
+        }
+        return fail(config, 404, {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found',
+        });
+      },
+      getAccessToken: () => Promise.resolve('token-1'),
+      refreshAccessToken: () => Promise.resolve(null),
+      onUnauthorized: vi.fn(),
+    });
+
+    await expect(
+      fetchCurrentUser(client, { language: 'en', timeZone: 'Europe/Kyiv' }),
+    ).resolves.toEqual(user);
   });
 
   it('maps a missing response to a network error', async () => {

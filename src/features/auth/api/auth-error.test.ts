@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { AuthError, toAuthError } from '@/features/auth/api/auth-error';
 
 describe('toAuthError', () => {
@@ -17,6 +17,16 @@ describe('toAuthError', () => {
     expect(
       toAuthError({ error: { code: 'INVALID_PASSWORD' } }, 'generic').code,
     ).toBe('invalidCredentials');
+    expect(
+      toAuthError(
+        {
+          code: 'invalid_credentials',
+          status: 401,
+          error: { code: 'INVALID_EMAIL_OR_PASSWORD', status: 401 },
+        },
+        'generic',
+      ).code,
+    ).toBe('invalidCredentials');
   });
 
   it('maps taken emails and password length', () => {
@@ -26,10 +36,32 @@ describe('toAuthError', () => {
     expect(toAuthError({ code: 'PASSWORD_TOO_LONG' }, 'generic').code).toBe(
       'passwordTooShort',
     );
+    expect(
+      toAuthError(
+        {
+          code: 'validation_failed',
+          status: 400,
+          error: { code: 'PASSWORD_TOO_SHORT' },
+        },
+        'generic',
+      ).code,
+    ).toBe('passwordTooShort');
+    expect(toAuthError({ code: 'user_already_exists' }, 'generic').code).toBe(
+      'emailTaken',
+    );
   });
 
   it('maps transport and server failures by status', () => {
     expect(toAuthError({ status: 0 }, 'generic').code).toBe('network');
+    expect(toAuthError(new TypeError('Failed to fetch'), 'generic').code).toBe(
+      'network',
+    );
+    expect(
+      toAuthError(
+        new Error('NetworkError when attempting to fetch resource.'),
+        'generic',
+      ).code,
+    ).toBe('network');
     expect(toAuthError({ status: 500 }, 'invalidCredentials').code).toBe(
       'generic',
     );
@@ -49,5 +81,18 @@ describe('toAuthError', () => {
     expect(toAuthError({ code: 'SOMETHING_ELSE' }, 'googleFailed').code).toBe(
       'googleFailed',
     );
+  });
+
+  it('keeps an http error when the browser is offline', () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    expect(
+      toAuthError({ status: 401, code: 'INVALID_EMAIL_OR_PASSWORD' }, 'generic')
+        .code,
+    ).toBe('invalidCredentials');
+  });
+
+  it('treats an offline browser with no response as a network failure', () => {
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    expect(toAuthError(new Error('boom'), 'generic').code).toBe('network');
   });
 });

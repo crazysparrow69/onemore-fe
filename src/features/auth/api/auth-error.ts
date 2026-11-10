@@ -52,15 +52,19 @@ function numberField(value: unknown, key: string): number | undefined {
   return typeof field === 'number' ? field : undefined;
 }
 
-function readCode(error: unknown): string | undefined {
+function readCodes(error: unknown): string[] {
+  const codes: string[] = [];
   const direct = stringField(error, 'code');
   if (direct) {
-    return direct;
+    codes.push(direct);
   }
-  if (!isRecord(error)) {
-    return undefined;
+  if (isRecord(error)) {
+    const nested = stringField(error.error, 'code');
+    if (nested && nested !== direct) {
+      codes.push(nested);
+    }
   }
-  return stringField(error.error, 'code');
+  return codes;
 }
 
 function readStatus(error: unknown): number | undefined {
@@ -71,21 +75,60 @@ function readStatus(error: unknown): number | undefined {
   return numberField(error, 'statusCode');
 }
 
+function isFetchFailureMessage(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes('failed to fetch') ||
+    lower.includes('networkerror') ||
+    lower.includes('network request failed') ||
+    lower.includes('load failed') ||
+    lower.includes('network error')
+  );
+}
+
+function isNetworkFailure(error: unknown): boolean {
+  const status = readStatus(error);
+  if (status === 0) {
+    return true;
+  }
+  if (status !== undefined) {
+    return false;
+  }
+  if (typeof navigator !== 'undefined' && !navigator.onLine) {
+    return true;
+  }
+  if (error instanceof TypeError) {
+    return true;
+  }
+  if (error instanceof Error && isFetchFailureMessage(error.message)) {
+    return true;
+  }
+  const message = stringField(error, 'message');
+  return message !== undefined && isFetchFailureMessage(message);
+}
+
 function fromCode(code: string): AuthError | undefined {
   if (
     code === 'INVALID_EMAIL_OR_PASSWORD' ||
     code === 'USER_NOT_FOUND' ||
-    code === 'INVALID_PASSWORD'
+    code === 'INVALID_PASSWORD' ||
+    code === 'invalid_credentials'
   ) {
     return new AuthError('invalidCredentials');
   }
   if (
     code === 'USER_ALREADY_EXISTS' ||
-    code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL'
+    code === 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL' ||
+    code === 'user_already_exists' ||
+    code === 'email_exists'
   ) {
     return new AuthError('emailTaken');
   }
-  if (code === 'PASSWORD_TOO_SHORT' || code === 'PASSWORD_TOO_LONG') {
+  if (
+    code === 'PASSWORD_TOO_SHORT' ||
+    code === 'PASSWORD_TOO_LONG' ||
+    code === 'weak_password'
+  ) {
     return new AuthError('passwordTooShort');
   }
   const known = knownCode(code);
@@ -126,8 +169,10 @@ export function toAuthError(
   if (error instanceof AuthError) {
     return error;
   }
-  const code = readCode(error);
-  if (code) {
+  if (isNetworkFailure(error)) {
+    return new AuthError('network');
+  }
+  for (const code of readCodes(error)) {
     const coded = fromCode(code);
     if (coded) {
       return coded;

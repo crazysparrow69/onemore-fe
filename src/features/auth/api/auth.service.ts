@@ -42,17 +42,38 @@ function isAbort(error: unknown): boolean {
   return error instanceof Error && error.name === 'AbortError';
 }
 
+type AuthFallback = AuthErrorCode | ((error: unknown) => AuthErrorCode);
+
+function httpStatus(error: unknown): number | undefined {
+  if (typeof error !== 'object' || error === null) {
+    return undefined;
+  }
+  if ('status' in error && typeof error.status === 'number') {
+    return error.status;
+  }
+  if ('statusCode' in error && typeof error.statusCode === 'number') {
+    return error.statusCode;
+  }
+  return undefined;
+}
+
+function signInFallback(error: unknown): AuthErrorCode {
+  const status = httpStatus(error);
+  if (status !== undefined && status >= 400 && status < 500) {
+    return 'invalidCredentials';
+  }
+  return 'generic';
+}
+
 async function call<T>(
   run: () => Promise<T>,
-  fallback: AuthErrorCode,
+  fallback: AuthFallback,
 ): Promise<T> {
   try {
     return await run();
   } catch (error) {
-    if (error instanceof AuthError) {
-      throw error;
-    }
-    throw new AuthError(fallback);
+    const code = typeof fallback === 'function' ? fallback(error) : fallback;
+    throw toAuthError(error, code);
   }
 }
 
@@ -70,7 +91,7 @@ export async function signUpWithEmail(input: {
     if (result.error) {
       throw toAuthError(result.error, 'generic');
     }
-  }, 'network');
+  }, 'generic');
 }
 
 export async function signInWithEmail(input: {
@@ -85,7 +106,7 @@ export async function signInWithEmail(input: {
     if (result.error) {
       throw toAuthError(result.error, 'invalidCredentials');
     }
-  }, 'network');
+  }, signInFallback);
 }
 
 export async function signInWithGoogle(): Promise<void> {
@@ -110,9 +131,6 @@ export async function signInWithGoogle(): Promise<void> {
     if (isAbort(error)) {
       return;
     }
-    if (error instanceof AuthError) {
-      throw error;
-    }
     throw toAuthError(error, 'googleFailed');
   }
 }
@@ -123,7 +141,7 @@ export async function signOut(): Promise<void> {
     if (result.error) {
       throw toAuthError(result.error, 'generic');
     }
-  }, 'network');
+  }, 'generic');
 }
 
 export async function getSession(): Promise<AuthSession | null> {
