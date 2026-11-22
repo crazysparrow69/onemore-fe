@@ -4,7 +4,7 @@ import { i18n } from '@/shared/i18n';
 import { toast } from '@/shared/lib/toast';
 import { authKeys } from '@/features/auth/api/auth.keys';
 import { getSession } from '@/features/auth/api/auth.service';
-import { fetchCurrentUser } from '@/features/auth/api/me.service';
+import { fetchCurrentUser } from '@/features/auth/api/current-user.service';
 
 export async function completeSocialSignIn(
   queryClient: QueryClient,
@@ -16,7 +16,7 @@ export async function completeSocialSignIn(
       throw redirect({ to: '/sign-in' });
     }
     await fetchCurrentUser();
-    await queryClient.invalidateQueries({ queryKey: authKeys.me() });
+    await queryClient.invalidateQueries({ queryKey: authKeys.currentUser() });
     toast.success(i18n.t('auth.toast.signedIn'));
     throw redirect({ to: '/' });
   } catch (error) {

@@ -1,4 +1,4 @@
 export const authKeys = {
   all: ['auth'] as const,
-  me: () => [...authKeys.all, 'me'] as const,
+  currentUser: () => [...authKeys.all, 'current-user'] as const,
 };

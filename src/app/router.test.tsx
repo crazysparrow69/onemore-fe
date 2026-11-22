@@ -47,6 +47,17 @@ describe('router', () => {
     });
   });
 
+  it.each(['/profile', '/settings'])(
+    'sends a guest from %s to sign in',
+    async (path) => {
+      const history = await renderApp(path);
+
+      await waitFor(() => {
+        expect(history.location.pathname).toBe('/sign-in');
+      });
+    },
+  );
+
   it('sends a signed-in user from sign in to home', async () => {
     vi.mocked(getSession).mockResolvedValue({ email: 'a@b.co' });
     const history = await renderApp('/sign-in');
