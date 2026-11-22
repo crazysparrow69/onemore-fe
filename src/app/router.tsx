@@ -31,6 +31,26 @@ const indexRoute = createRoute({
   component: HomePage,
 });
 
+const profileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profile',
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/account'),
+    'ProfilePage',
+  ),
+});
+
+const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings',
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/account'),
+    'SettingsPage',
+  ),
+});
+
 const signInRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sign-in',
@@ -54,6 +74,8 @@ const callbackRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  profileRoute,
+  settingsRoute,
   signInRoute,
   signUpRoute,
   callbackRoute,

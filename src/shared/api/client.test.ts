@@ -8,7 +8,7 @@ import {
 import { describe, expect, it, vi } from 'vitest';
 import { createApiClient } from '@/shared/api/client';
 import { ApiError } from '@/shared/api/error';
-import { fetchCurrentUser } from '@/features/auth/api/me.service';
+import { fetchCurrentUser } from '@/features/auth/api/current-user.service';
 
 function response(
   config: InternalAxiosRequestConfig,
@@ -187,8 +187,10 @@ describe('createApiClient', () => {
       id: 'user-1',
       email: 'a@b.co',
       name: 'Ada',
+      nickname: null,
       role: 'user',
       language: 'en',
+      units: 'kg',
       timeZone: 'Europe/Kyiv',
       createdAt: '2026-01-01T00:00:00.000Z',
     };
@@ -208,8 +210,33 @@ describe('createApiClient', () => {
     });
 
     await expect(
-      fetchCurrentUser(client, { language: 'en', timeZone: 'Europe/Kyiv' }),
+      fetchCurrentUser(client, {
+        language: 'en',
+        units: 'kg',
+        timeZone: 'Europe/Kyiv',
+      }),
     ).resolves.toEqual(user);
+  });
+
+  it('sends a PATCH with the body and the bearer token', async () => {
+    let seen: InternalAxiosRequestConfig | undefined;
+    const client = createApiClient({
+      adapter: (config) => {
+        seen = config;
+        return Promise.resolve(response(config, 200, { ok: true }));
+      },
+      getAccessToken: () => Promise.resolve('token-1'),
+      refreshAccessToken: () => Promise.resolve(null),
+      onUnauthorized: vi.fn(),
+    });
+
+    await expect(client.patch('/me', { units: 'lb' })).resolves.toEqual({
+      ok: true,
+    });
+    expect(seen?.method).toBe('patch');
+    expect(seen?.url).toBe('/me');
+    expect(JSON.parse(String(seen?.data))).toEqual({ units: 'lb' });
+    expect(seen?.headers.get('Authorization')).toBe('Bearer token-1');
   });
 
   it('maps a missing response to a network error', async () => {

@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { useNavigate } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { applyLanguage } from '@/shared/i18n/apply-language';
 import { toast } from '@/shared/lib/toast';
 import {
   isAuthFailure,
@@ -13,7 +15,7 @@ import {
   signOut,
   signUpWithEmail,
 } from '@/features/auth/api/auth.service';
-import { fetchCurrentUser } from '@/features/auth/api/me.service';
+import { fetchCurrentUser } from '@/features/auth/api/current-user.service';
 
 type AuthMessageKey =
   | 'auth.errors.invalidCredentials'
@@ -40,10 +42,19 @@ function messageKey(error: unknown): AuthMessageKey {
 }
 
 export function useCurrentUser() {
-  return useQuery({
-    queryKey: authKeys.me(),
+  const query = useQuery({
+    queryKey: authKeys.currentUser(),
     queryFn: () => fetchCurrentUser(),
   });
+  const language = query.data?.language;
+
+  useEffect(() => {
+    if (language) {
+      void applyLanguage(language);
+    }
+  }, [language]);
+
+  return query;
 }
 
 export function useSignUp() {
@@ -54,7 +65,7 @@ export function useSignUp() {
   return useMutation({
     mutationFn: signUpWithEmail,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: authKeys.me() });
+      await queryClient.invalidateQueries({ queryKey: authKeys.currentUser() });
       toast.success(t('auth.toast.signedUp'));
       await navigate({ to: '/' });
     },
@@ -72,7 +83,7 @@ export function useSignIn() {
   return useMutation({
     mutationFn: signInWithEmail,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: authKeys.me() });
+      await queryClient.invalidateQueries({ queryKey: authKeys.currentUser() });
       toast.success(t('auth.toast.signedIn'));
       await navigate({ to: '/' });
     },

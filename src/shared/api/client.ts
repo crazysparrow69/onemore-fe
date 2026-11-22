@@ -18,6 +18,7 @@ declare module 'axios' {
 export interface ApiClient {
   get(path: string): Promise<unknown>;
   put(path: string, body: unknown): Promise<unknown>;
+  patch(path: string, body: unknown): Promise<unknown>;
 }
 
 export interface ApiClientDeps {
@@ -83,6 +84,10 @@ export function createApiClient(deps: ApiClientDeps): ApiClient {
     },
     async put(path, body) {
       const response = await instance.put<unknown>(path, body);
+      return response.data;
+    },
+    async patch(path, body) {
+      const response = await instance.patch<unknown>(path, body);
       return response.data;
     },
   };

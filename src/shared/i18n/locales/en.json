@@ -5,7 +5,9 @@
   "home": {
     "title": "onemore",
     "subtitle": "Workout and nutrition diary",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "profile": "Profile",
+    "settings": "Settings"
   },
   "auth": {
     "or": "or",
@@ -49,11 +51,15 @@
     "passwordMin": "Password must be at least 8 characters",
     "passwordMax": "Password must be at most 128 characters",
     "username": "Enter a username",
-    "required": "This field is required"
+    "required": "This field is required",
+    "nameMax": "Name must be at most 100 characters",
+    "nickname": "3-20 characters: a-z, 0-9 and _",
+    "nicknameTaken": "This nickname is already taken"
   },
   "common": {
     "loading": "Loading",
-    "retry": "Retry"
+    "retry": "Retry",
+    "back": "Back"
   },
   "errors": {
     "generic": {
@@ -72,5 +78,26 @@
       "reload": "Reload",
       "later": "Later"
     }
+  },
+  "profile": {
+    "title": "Profile",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "nickname": "Nickname",
+    "nicknamePlaceholder": "nickname",
+    "nicknameHint": "Latin letters, digits and _, 3-20 characters. Friends will find you by it.",
+    "email": "Email",
+    "save": "Save",
+    "saved": "Profile saved"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "units": "Units",
+    "unitsKg": "kg",
+    "unitsLb": "lb",
+    "timeZone": "Time zone",
+    "save": "Save",
+    "saved": "Settings saved"
   }
 }

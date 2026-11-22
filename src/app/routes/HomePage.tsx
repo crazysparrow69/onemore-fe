@@ -1,5 +1,8 @@
+import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
+import { initials } from '@/features/account/model/initials';
 import { useCurrentUser, useSignOut } from '@/features/auth/api/use-auth';
+import { Avatar } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';
 import { Text } from '@/shared/ui/text';
 
@@ -18,7 +21,22 @@ export function HomePage() {
       {user.isError ? (
         <Text tone="danger">{t('errors.generic.description')}</Text>
       ) : null}
-      {user.data ? <Text>{user.data.email}</Text> : null}
+      {user.data ? (
+        <Link to="/profile" className="flex items-center gap-3 self-start">
+          <Avatar initials={initials(user.data)} />
+          <span className="flex flex-col">
+            <Text weight="medium">{user.data.name ?? user.data.email}</Text>
+            {user.data.nickname ? (
+              <Text size="sm" tone="muted">
+                @{user.data.nickname}
+              </Text>
+            ) : null}
+          </span>
+        </Link>
+      ) : null}
+      <Link to="/settings" className="self-start text-primary">
+        {t('home.settings')}
+      </Link>
       <Button
         type="button"
         className="self-start"

@@ -6,6 +6,9 @@ const VALIDATION_KEYS = [
   'validation.passwordMax',
   'validation.username',
   'validation.required',
+  'validation.nameMax',
+  'validation.nickname',
+  'validation.nicknameTaken',
 ] as const;
 
 type ValidationKey = (typeof VALIDATION_KEYS)[number];
