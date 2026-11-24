@@ -66,3 +66,7 @@ src/features    feature modules (added later)
 src/shared      ui, api client, i18n, lib (added later)
 src/test        Vitest setup
 ```
+
+## Exercise images
+
+`public/exercises/<source_id in lowercase>/<n>.webp` are the photos of the system exercise catalog, converted once from free-exercise-db (commit `f00c92c`): JPG to WebP, width at most 800 px (never upscaled), quality 75. The backend stores the keys (`exercises/<source_id in lowercase>/0.webp`), not URLs. Vercel serves them with `Cache-Control: public, max-age=2592000` (`vercel.json`); the service worker does not precache them.

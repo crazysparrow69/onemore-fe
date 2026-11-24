@@ -5,5 +5,16 @@
       "source": "/api/:path*",
       "destination": "https://core-service-472424626305.europe-west1.run.app/api/:path*"
     }
+  ],
+  "headers": [
+    {
+      "source": "/exercises/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=2592000"
+        }
+      ]
+    }
   ]
 }
