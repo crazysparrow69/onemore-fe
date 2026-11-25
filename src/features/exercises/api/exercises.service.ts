@@ -14,6 +14,7 @@ const listItemSchema = z.object({
   secondaryMuscles: z.array(z.string()),
   equipment: z.string(),
   image: z.string().nullable(),
+  custom: z.boolean(),
 });
 
 const listSchema = z.object({
@@ -33,17 +34,20 @@ const detailsSchema = listItemSchema.extend({
 
 const optionSchema = z.object({ id: z.string(), label: z.string() });
 
+const muscleOptionSchema = optionSchema.extend({ primaryOnly: z.boolean() });
+const typeOptionSchema = optionSchema.extend({ example: z.string() });
+
 const dictionariesSchema = z.object({
   locale: z.string(),
   muscleGroups: z.array(
     z.object({
       id: z.string(),
       label: z.string(),
-      muscles: z.array(optionSchema),
+      muscles: z.array(muscleOptionSchema),
     }),
   ),
   equipment: z.array(optionSchema),
-  types: z.array(optionSchema),
+  types: z.array(typeOptionSchema),
   categories: z.array(optionSchema),
   levels: z.array(optionSchema),
   forces: z.array(optionSchema),
@@ -55,6 +59,17 @@ export type ExerciseList = z.infer<typeof listSchema>;
 export type ExerciseDetails = z.infer<typeof detailsSchema>;
 export type ExerciseDictionaries = z.infer<typeof dictionariesSchema>;
 export type ExerciseOption = z.infer<typeof optionSchema>;
+export type MuscleOption = z.infer<typeof muscleOptionSchema>;
+export type TypeOption = z.infer<typeof typeOptionSchema>;
+
+export interface ExerciseInput {
+  name: string;
+  type: string;
+  primaryMuscles: string[];
+  secondaryMuscles: string[];
+  equipment: string;
+  instructions: string[];
+}
 
 function parse<T>(schema: z.ZodType<T>, value: unknown): T {
   const parsed = schema.safeParse(value);
@@ -77,6 +92,7 @@ export async function fetchExercises(
       muscle: filters.muscle.length > 0 ? filters.muscle.join(',') : undefined,
       equipment:
         filters.equipment.length > 0 ? filters.equipment.join(',') : undefined,
+      mine: filters.mine ? 'true' : undefined,
       offset,
       limit,
     }),
@@ -91,6 +107,31 @@ export async function fetchExercise(
     detailsSchema,
     await client.get(`/exercises/${encodeURIComponent(id)}`),
   );
+}
+
+export async function createExercise(
+  input: ExerciseInput,
+  client: ApiClient = api,
+): Promise<ExerciseDetails> {
+  return parse(detailsSchema, await client.post('/exercises', input));
+}
+
+export async function updateExercise(
+  id: string,
+  input: ExerciseInput,
+  client: ApiClient = api,
+): Promise<ExerciseDetails> {
+  return parse(
+    detailsSchema,
+    await client.put(`/exercises/${encodeURIComponent(id)}`, input),
+  );
+}
+
+export async function deleteExercise(
+  id: string,
+  client: ApiClient = api,
+): Promise<void> {
+  await client.delete(`/exercises/${encodeURIComponent(id)}`);
 }
 
 export async function fetchExerciseDictionaries(

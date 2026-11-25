@@ -7,6 +7,7 @@ export const exercisesKeys = {
     [...exercisesKeys.all, 'list', language] as const,
   list: (language: Language, filters: CatalogFilters) =>
     [...exercisesKeys.lists(language), filters] as const,
+  counts: () => [...exercisesKeys.all, 'count'] as const,
   count: (language: Language, filters: CatalogFilters) =>
     [...exercisesKeys.all, 'count', language, filters] as const,
   detail: (language: Language, id: string) =>

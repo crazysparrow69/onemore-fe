@@ -19,8 +19,10 @@ export type ApiParams = Record<string, string | number | undefined>;
 
 export interface ApiClient {
   get(path: string, params?: ApiParams): Promise<unknown>;
+  post(path: string, body: unknown): Promise<unknown>;
   put(path: string, body: unknown): Promise<unknown>;
   patch(path: string, body: unknown): Promise<unknown>;
+  delete(path: string): Promise<void>;
 }
 
 export interface ApiClientDeps {
@@ -84,6 +86,10 @@ export function createApiClient(deps: ApiClientDeps): ApiClient {
       const response = await instance.get<unknown>(path, { params });
       return response.data;
     },
+    async post(path, body) {
+      const response = await instance.post<unknown>(path, body);
+      return response.data;
+    },
     async put(path, body) {
       const response = await instance.put<unknown>(path, body);
       return response.data;
@@ -91,6 +97,9 @@ export function createApiClient(deps: ApiClientDeps): ApiClient {
     async patch(path, body) {
       const response = await instance.patch<unknown>(path, body);
       return response.data;
+    },
+    async delete(path) {
+      await instance.delete<unknown>(path);
     },
   };
 }

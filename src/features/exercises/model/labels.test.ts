@@ -8,12 +8,12 @@ const dictionaries: ExerciseDictionaries = {
     {
       id: 'upper_body',
       label: 'Верх тіла',
-      muscles: [{ id: 'chest', label: 'Груди' }],
+      muscles: [{ id: 'chest', label: 'Груди', primaryOnly: false }],
     },
     {
       id: 'lower_body',
       label: 'Низ тіла',
-      muscles: [{ id: 'calves', label: 'Литки' }],
+      muscles: [{ id: 'calves', label: 'Литки', primaryOnly: false }],
     },
   ],
   equipment: [{ id: 'barbell', label: 'Штанга' }],

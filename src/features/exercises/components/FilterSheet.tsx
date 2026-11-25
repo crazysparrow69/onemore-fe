@@ -1,10 +1,9 @@
-import { Check } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useExerciseCount } from '@/features/exercises/api/use-exercises';
+import { FilterCard } from '@/features/exercises/components/FilterCard';
 import { FilterThumb } from '@/features/exercises/components/FilterThumb';
 import type { CatalogFilters } from '@/features/exercises/model/catalog-search';
-import { cn } from '@/shared/lib/utils';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import { Button } from '@/shared/ui/button';
 
@@ -14,38 +13,6 @@ export interface FilterSection {
   id: string;
   label: string | null;
   options: { id: string; label: string }[];
-}
-
-function FilterCard({
-  selected,
-  label,
-  thumb,
-  onClick,
-}: {
-  selected: boolean;
-  label: string;
-  thumb: ReactNode;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onClick}
-      className={cn(
-        'flex items-center gap-3 rounded-xl bg-secondary p-2.5 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-        selected ? 'ring-2 ring-primary' : '',
-      )}
-    >
-      {thumb}
-      <span className="min-w-0 flex-1 text-sm leading-tight font-medium">
-        {label}
-      </span>
-      {selected ? (
-        <Check className="size-4 shrink-0 text-primary" aria-hidden />
-      ) : null}
-    </button>
-  );
 }
 
 function FilterSheet({

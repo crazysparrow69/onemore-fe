@@ -1,12 +1,17 @@
 import { getRouteApi, Link, useRouter } from '@tanstack/react-router';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Ellipsis } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ApiError } from '@/shared/api/error';
 import {
   useExercise,
   useExerciseLabels,
 } from '@/features/exercises/api/use-exercises';
+import { useDeleteExercise } from '@/features/exercises/api/use-exercise-mutations';
 import { ExercisePhotos } from '@/features/exercises/components/ExercisePhotos';
+import { ExercisePlaceholder } from '@/features/exercises/components/ExercisePlaceholder';
+import { toast } from '@/shared/lib/toast';
+import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import { Button } from '@/shared/ui/button';
 import { IconButton } from '@/shared/ui/icon-button';
 import { Skeleton } from '@/shared/ui/skeleton';
@@ -28,6 +33,20 @@ function ExercisePage() {
   const router = useRouter();
   const exercise = useExercise(exerciseId);
   const labels = useExerciseLabels();
+  const [menu, setMenu] = useState<'actions' | 'delete' | null>(null);
+  const remove = useDeleteExercise(exerciseId, async () => {
+    setMenu(null);
+    toast.success(t('catalog.deleted'));
+    await router.navigate({ to: '/exercises', replace: true });
+  });
+
+  function removeExercise() {
+    remove.mutate(undefined, {
+      onError: () => {
+        toast.error(t('errors.generic.description'));
+      },
+    });
+  }
 
   function goBack() {
     if (router.history.canGoBack()) {
@@ -57,10 +76,20 @@ function ExercisePage() {
 
   return (
     <main className="flex flex-1 flex-col pb-8">
-      <header className="px-4 pt-4 pb-3">
+      <header className="flex items-center justify-between px-4 pt-4 pb-3">
         <IconButton aria-label={t('common.back')} onClick={goBack}>
           <ArrowLeft aria-hidden />
         </IconButton>
+        {data?.custom && !exercise.isPlaceholderData ? (
+          <IconButton
+            aria-label={t('catalog.menu')}
+            onClick={() => {
+              setMenu('actions');
+            }}
+          >
+            <Ellipsis aria-hidden />
+          </IconButton>
+        ) : null}
       </header>
 
       {exercise.isPending ? (
@@ -102,7 +131,13 @@ function ExercisePage() {
               keys={data.imageKeys}
               label={t('catalog.togglePhotos')}
             />
-          ) : null}
+          ) : (
+            <ExercisePlaceholder
+              seed={data.id}
+              className="aspect-[4/3] w-full"
+              iconClassName="size-16"
+            />
+          )}
           <div className="flex flex-col gap-4 px-4 pt-4">
             <div className="flex flex-col gap-1">
               <Text as="h1" size="2xl" weight="semibold">
@@ -153,6 +188,67 @@ function ExercisePage() {
           </div>
         </>
       ) : null}
+
+      <BottomSheet
+        compact
+        open={menu === 'actions'}
+        onOpenChange={(open) => {
+          setMenu(open ? 'actions' : null);
+        }}
+        title={data?.name ?? ''}
+      >
+        <div className="flex flex-col gap-2">
+          <Button asChild variant="secondary" size="lg" fullWidth>
+            <Link to="/exercises/$exerciseId/edit" params={{ exerciseId }}>
+              {t('catalog.edit')}
+            </Link>
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            size="lg"
+            fullWidth
+            onClick={() => {
+              setMenu('delete');
+            }}
+          >
+            {t('catalog.delete')}
+          </Button>
+        </div>
+      </BottomSheet>
+      <BottomSheet
+        compact
+        open={menu === 'delete'}
+        onOpenChange={(open) => {
+          setMenu(open ? 'delete' : null);
+        }}
+        title={t('catalog.deleteTitle')}
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="secondary"
+              className="min-w-0 flex-1 px-3 text-sm"
+              onClick={() => {
+                setMenu(null);
+              }}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              className="min-w-0 flex-1 px-3 text-sm"
+              loading={remove.isPending}
+              onClick={removeExercise}
+            >
+              {t('catalog.delete')}
+            </Button>
+          </>
+        }
+      >
+        <Text tone="muted">{t('catalog.deleteHint')}</Text>
+      </BottomSheet>
     </main>
   );
 }

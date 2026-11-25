@@ -9,12 +9,14 @@ function BottomSheet({
   onOpenChange,
   title,
   footer,
+  compact = false,
   children,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
   footer?: ReactNode;
+  compact?: boolean;
   children: ReactNode;
 }) {
   const [offset, setOffset] = useState(0);
@@ -45,7 +47,8 @@ function BottomSheet({
               : undefined
           }
           className={cn(
-            'fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[85dvh] w-full max-w-md flex-col rounded-t-2xl bg-card outline-none data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom',
+            'fixed inset-x-0 bottom-0 z-50 mx-auto flex w-full max-w-md flex-col rounded-t-2xl bg-card outline-none data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:animate-in data-[state=open]:slide-in-from-bottom',
+            compact ? 'max-h-[85dvh]' : 'h-[85dvh]',
             dragging ? '' : 'transition-transform',
           )}
         >

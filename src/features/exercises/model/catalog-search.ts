@@ -46,12 +46,14 @@ export interface CatalogSearch {
   q?: string;
   muscle?: string;
   equipment?: string;
+  mine?: boolean;
 }
 
 export interface CatalogFilters {
   q: string;
   muscle: string[];
   equipment: string[];
+  mine: boolean;
 }
 
 function parseText(value: unknown): string | undefined {
@@ -77,6 +79,12 @@ function parseIds(
   return ids.length > 0 ? ids.join(',') : undefined;
 }
 
+export function validateNewExerciseSearch(search: Record<string, unknown>): {
+  name?: string;
+} {
+  return { name: parseText(search.name) };
+}
+
 export function validateCatalogSearch(
   search: Record<string, unknown>,
 ): CatalogSearch {
@@ -84,6 +92,7 @@ export function validateCatalogSearch(
     q: parseText(search.q),
     muscle: parseIds(search.muscle, MUSCLE_IDS),
     equipment: parseIds(search.equipment, EQUIPMENT_IDS),
+    mine: search.mine === true || search.mine === 'true' ? true : undefined,
   };
 }
 
@@ -100,6 +109,7 @@ export function filtersFromSearch(search: CatalogSearch): CatalogFilters {
     q: search.q ?? '',
     muscle: splitIds(search.muscle),
     equipment: splitIds(search.equipment),
+    mine: search.mine === true,
   };
 }
 
@@ -107,6 +117,7 @@ export function hasFilters(filters: CatalogFilters): boolean {
   return (
     filters.q.length > 0 ||
     filters.muscle.length > 0 ||
-    filters.equipment.length > 0
+    filters.equipment.length > 0 ||
+    filters.mine
   );
 }

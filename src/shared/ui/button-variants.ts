@@ -9,6 +9,8 @@ export const buttonVariants = cva(
           'bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary/80 disabled:bg-muted disabled:text-muted-foreground',
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary/70 disabled:bg-muted disabled:text-muted-foreground',
+        destructive:
+          'bg-secondary text-destructive hover:bg-secondary/80 active:bg-secondary/70 disabled:bg-muted disabled:text-muted-foreground',
         ghost:
           'hover:bg-accent hover:text-accent-foreground disabled:text-muted-foreground',
         link: 'text-primary underline-offset-4 hover:underline disabled:text-muted-foreground',

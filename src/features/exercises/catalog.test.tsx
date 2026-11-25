@@ -14,6 +14,7 @@ import { getSession } from '@/features/auth/api/auth.service';
 import type { CurrentUser } from '@/features/auth/api/current-user.service';
 import { fetchCurrentUser } from '@/features/auth/api/current-user.service';
 import {
+  deleteExercise,
   fetchExercise,
   fetchExerciseDictionaries,
   fetchExercises,
@@ -49,6 +50,7 @@ vi.mock(
     fetchExercises: vi.fn(),
     fetchExercise: vi.fn(),
     fetchExerciseDictionaries: vi.fn(),
+    deleteExercise: vi.fn(),
   }),
 );
 
@@ -71,8 +73,8 @@ const dictionaries: ExerciseDictionaries = {
       id: 'upper_body',
       label: 'Верх тіла',
       muscles: [
-        { id: 'chest', label: 'Груди' },
-        { id: 'triceps', label: 'Трицепс' },
+        { id: 'chest', label: 'Груди', primaryOnly: false },
+        { id: 'triceps', label: 'Трицепс', primaryOnly: false },
       ],
     },
   ],
@@ -96,6 +98,7 @@ const bench: ExerciseListItem = {
   secondaryMuscles: ['triceps'],
   equipment: 'barbell',
   image: 'exercises/bench/0.webp',
+  custom: false,
 };
 
 const details: ExerciseDetails = {
@@ -167,6 +170,7 @@ describe('exercise catalog', () => {
         q: 'жим',
         muscle: [],
         equipment: [],
+        mine: false,
       });
     });
     expect(await screen.findByText('Знайдено: 1')).toBeTruthy();
@@ -194,6 +198,7 @@ describe('exercise catalog', () => {
         q: '',
         muscle: [],
         equipment: ['barbell', 'dumbbell'],
+        mine: false,
       });
     });
     expect(
@@ -240,6 +245,7 @@ describe('exercise catalog', () => {
       q: '',
       muscle: [],
       equipment: ['cable'],
+      mine: false,
     });
   });
 
@@ -266,6 +272,132 @@ describe('exercise catalog', () => {
 
     expect(await screen.findByText('Вправу не знайдено')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'До списку вправ' })).toBeTruthy();
+  });
+
+  it('marks my own exercises and offers to create one', async () => {
+    vi.mocked(fetchExercises).mockResolvedValue({
+      items: [{ ...bench, id: 'own-1', name: 'Жим у хамері', custom: true }],
+      total: 1,
+      nextOffset: null,
+    });
+
+    await renderAt('/exercises');
+
+    expect(await screen.findByText('Жим у хамері')).toBeTruthy();
+    expect(screen.getByText('Своя · Груди')).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'Створити' }).getAttribute('href'),
+    ).toBe('/exercises/new');
+  });
+
+  it('limits the list to my exercises with the chip', async () => {
+    const history = await renderAt('/exercises');
+    await screen.findByText('Жим штанги лежачи');
+
+    const chip = screen.getByRole('button', { name: 'Мої вправи' });
+    expect(chip.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(chip);
+
+    await waitFor(() => {
+      expect(history.location.search).toContain('mine=true');
+    });
+    await waitFor(() => {
+      expect(lastListCall()?.[0]).toEqual({
+        q: '',
+        muscle: [],
+        equipment: [],
+        mine: true,
+      });
+    });
+    expect(
+      screen
+        .getByRole('button', { name: 'Мої вправи' })
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Мої вправи' }));
+    await waitFor(() => {
+      expect(history.location.search).toBe('');
+    });
+  });
+
+  it('says that I have no own exercises yet and offers to create one', async () => {
+    vi.mocked(fetchExercises).mockResolvedValue({
+      items: [],
+      total: 0,
+      nextOffset: null,
+    });
+
+    await renderAt('/exercises?mine=true');
+
+    expect(
+      await screen.findByText('У вас ще немає власних вправ'),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: 'Очистити фільтри' }),
+    ).toBeNull();
+    expect(screen.getAllByRole('link', { name: 'Створити' })).toHaveLength(2);
+  });
+
+  it('offers to create an exercise named after a search with no results', async () => {
+    vi.mocked(fetchExercises).mockResolvedValue({
+      items: [],
+      total: 0,
+      nextOffset: null,
+    });
+
+    await renderAt('/exercises?q=хамер');
+
+    const link = await screen.findByRole('link', { name: 'Створити «хамер»' });
+    expect(decodeURIComponent(link.getAttribute('href') ?? '')).toBe(
+      '/exercises/new?name=хамер',
+    );
+  });
+
+  it('shows the menu only on my own exercise and deletes it after a confirmation', async () => {
+    const own: ExerciseDetails = {
+      ...details,
+      id: 'own-1',
+      name: 'Жим у хамері',
+      custom: true,
+      imageKeys: [],
+      image: null,
+    };
+    vi.mocked(fetchExercise).mockResolvedValue(own);
+    vi.mocked(deleteExercise).mockResolvedValue();
+
+    const history = await renderAt('/exercises/own-1');
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Меню вправи' }));
+    const menu = await screen.findByRole('dialog');
+    expect(
+      within(menu)
+        .getByRole('link', { name: 'Редагувати' })
+        .getAttribute('href'),
+    ).toBe('/exercises/own-1/edit');
+    fireEvent.click(within(menu).getByRole('button', { name: 'Видалити' }));
+
+    const confirm = await screen.findByText('Видалити вправу?');
+    expect(confirm).toBeTruthy();
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', {
+        name: 'Видалити',
+      }),
+    );
+
+    await waitFor(() => {
+      expect(vi.mocked(deleteExercise)).toHaveBeenCalledWith('own-1');
+    });
+    await waitFor(() => {
+      expect(history.location.pathname).toBe('/exercises');
+    });
+  });
+
+  it('has no menu on a catalog exercise', async () => {
+    await renderAt(`/exercises/${bench.id}`);
+
+    await screen.findByRole('heading', { level: 1, name: bench.name });
+    expect(screen.queryByRole('button', { name: 'Меню вправи' })).toBeNull();
   });
 
   it('sends a guest to sign in', async () => {

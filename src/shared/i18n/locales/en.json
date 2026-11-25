@@ -60,7 +60,8 @@
   "common": {
     "loading": "Loading",
     "retry": "Retry",
-    "back": "Back"
+    "back": "Back",
+    "cancel": "Cancel"
   },
   "errors": {
     "generic": {
@@ -124,6 +125,47 @@
     "togglePhotos": "Pause or resume the photo animation",
     "primary": "Primary: {{muscles}}",
     "secondary": "Secondary: {{muscles}}",
-    "instructions": "How to perform"
+    "instructions": "How to perform",
+    "create": "Create",
+    "createNamed": "Create “{{name}}”",
+    "mine": "My exercises",
+    "customLabel": "Custom",
+    "emptyMine": "You have no exercises of your own yet",
+    "menu": "Exercise menu",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteTitle": "Delete exercise?",
+    "deleteHint": "The exercise disappears from the catalog. Logged workouts are not changed.",
+    "deleted": "Exercise deleted"
+  },
+  "exerciseForm": {
+    "titleNew": "New exercise",
+    "titleEdit": "Edit exercise",
+    "save": "Save",
+    "saved": "Exercise saved",
+    "name": "Name",
+    "namePlaceholder": "For example, Hammer press",
+    "equipment": "Equipment",
+    "type": "Exercise type",
+    "primaryMuscle": "Primary muscle",
+    "secondaryMuscles": "Secondary muscles",
+    "instructions": "How to perform (optional)",
+    "instructionsHint": "One step per line",
+    "choose": "Choose",
+    "none": "None",
+    "done": "Done",
+    "discardTitle": "Discard changes?",
+    "discardHint": "The exercise will not be saved.",
+    "discard": "Discard",
+    "keepEditing": "Keep editing",
+    "checkFields": "Check the highlighted fields",
+    "limitReached": "You have reached the limit of 500 own exercises",
+    "notEditable": "This exercise cannot be edited",
+    "errors": {
+      "name": "The name must be 2-80 characters long",
+      "muscles": "Choose the type and a primary muscle; the primary muscle cannot repeat among the secondary ones",
+      "instructions": "At most 20 steps, up to 500 characters each"
+    },
+    "clear": "Clear"
   }
 }

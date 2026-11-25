@@ -121,6 +121,10 @@ function ExerciseListPage() {
   const items = list.data?.pages.flatMap((page) => page.items) ?? [];
   const total = list.data?.pages[0]?.total ?? 0;
   const filtered = hasFilters(filters);
+  const hasOtherFilters =
+    filters.q.length > 0 ||
+    filters.muscle.length > 0 ||
+    filters.equipment.length > 0;
 
   function filterLabel(field: FilterField): string {
     const ids = filters[field];
@@ -144,7 +148,7 @@ function ExerciseListPage() {
   return (
     <main className="flex flex-1 flex-col">
       <header className="sticky top-0 z-10 flex flex-col gap-3 bg-background px-4 pt-4 pb-3">
-        <div className="grid grid-cols-[2.5rem_1fr_2.5rem] items-center">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center">
           <Link
             to="/"
             aria-label={t('common.back')}
@@ -155,6 +159,14 @@ function ExerciseListPage() {
           <Text as="h1" size="lg" weight="semibold" className="text-center">
             {t('catalog.title')}
           </Text>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="justify-self-end text-primary"
+          >
+            <Link to="/exercises/new">{t('catalog.create')}</Link>
+          </Button>
         </div>
         <SearchField
           value={text}
@@ -185,6 +197,25 @@ function ExerciseListPage() {
             </Button>
           ))}
         </div>
+        <button
+          type="button"
+          aria-pressed={filters.mine}
+          className={cn(
+            'self-start rounded-full bg-secondary px-4 py-1.5 text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+            filters.mine ? 'text-primary ring-2 ring-primary' : '',
+          )}
+          onClick={() => {
+            void navigate({
+              search: (previous) => ({
+                ...previous,
+                mine: filters.mine ? undefined : true,
+              }),
+              replace: true,
+            });
+          }}
+        >
+          {t('catalog.mine')}
+        </button>
       </header>
 
       <section className="flex flex-1 flex-col gap-1 px-4 pb-8">
@@ -213,12 +244,26 @@ function ExerciseListPage() {
 
         {list.data && items.length === 0 ? (
           <div className="flex flex-col items-start gap-3 py-4">
-            <Text tone="muted">{t('catalog.empty')}</Text>
-            {filtered ? (
+            <Text tone="muted">
+              {filters.mine && !hasOtherFilters
+                ? t('catalog.emptyMine')
+                : t('catalog.empty')}
+            </Text>
+            {filtered && !(filters.mine && !hasOtherFilters) ? (
               <Button type="button" variant="secondary" onClick={reset}>
                 {t('catalog.clearFilters')}
               </Button>
             ) : null}
+            <Button asChild variant="secondary">
+              <Link
+                to="/exercises/new"
+                search={filters.q.length > 0 ? { name: filters.q } : {}}
+              >
+                {filters.q.length > 0
+                  ? t('catalog.createNamed', { name: filters.q })
+                  : t('catalog.create')}
+              </Link>
+            </Button>
           </div>
         ) : null}
 

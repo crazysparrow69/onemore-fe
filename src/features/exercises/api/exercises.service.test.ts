@@ -1,9 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  createExercise,
+  deleteExercise,
   exerciseImageUrl,
   fetchExercise,
   fetchExerciseDictionaries,
   fetchExercises,
+  updateExercise,
+  type ExerciseInput,
 } from '@/features/exercises/api/exercises.service';
 import { ApiError } from '@/shared/api/error';
 import type { ApiClient } from '@/shared/api/client';
@@ -16,10 +20,17 @@ const item = {
   secondaryMuscles: ['triceps'],
   equipment: 'barbell',
   image: 'exercises/bench/0.webp',
+  custom: false,
 };
 
 function clientWith(get: ApiClient['get']): ApiClient {
-  return { get, put: vi.fn(), patch: vi.fn() };
+  return {
+    get,
+    post: vi.fn(),
+    put: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+  };
 }
 
 describe('fetchExercises', () => {
@@ -29,7 +40,12 @@ describe('fetchExercises', () => {
     );
 
     const result = await fetchExercises(
-      { q: 'press', muscle: ['chest', 'triceps'], equipment: ['barbell'] },
+      {
+        q: 'press',
+        muscle: ['chest', 'triceps'],
+        equipment: ['barbell'],
+        mine: true,
+      },
       50,
       25,
       clientWith(get),
@@ -39,6 +55,7 @@ describe('fetchExercises', () => {
       q: 'press',
       muscle: 'chest,triceps',
       equipment: 'barbell',
+      mine: 'true',
       offset: 50,
       limit: 25,
     });
@@ -51,7 +68,7 @@ describe('fetchExercises', () => {
     );
 
     await fetchExercises(
-      { q: '', muscle: [], equipment: [] },
+      { q: '', muscle: [], equipment: [], mine: false },
       0,
       undefined,
       clientWith(get),
@@ -61,6 +78,7 @@ describe('fetchExercises', () => {
       q: undefined,
       muscle: undefined,
       equipment: undefined,
+      mine: undefined,
       offset: 0,
       limit: 50,
     });
@@ -70,7 +88,12 @@ describe('fetchExercises', () => {
     const client = clientWith(() => Promise.resolve({ items: 'nope' }));
 
     await expect(
-      fetchExercises({ q: '', muscle: [], equipment: [] }, 0, 50, client),
+      fetchExercises(
+        { q: '', muscle: [], equipment: [], mine: false },
+        0,
+        50,
+        client,
+      ),
     ).rejects.toMatchObject({ status: 500, code: 'INVALID_RESPONSE' });
   });
 });
@@ -117,5 +140,78 @@ describe('exerciseImageUrl', () => {
     expect(exerciseImageUrl('exercises/bench/0.webp')).toBe(
       '/exercises/bench/0.webp',
     );
+  });
+});
+
+describe('creating, replacing and deleting an own exercise', () => {
+  const input: ExerciseInput = {
+    name: 'Hammer press',
+    type: 'weight_reps',
+    primaryMuscles: ['chest'],
+    secondaryMuscles: ['triceps'],
+    equipment: 'machine',
+    instructions: ['Press'],
+  };
+  const details = {
+    ...item,
+    id: '22222222-2222-4222-8222-222222222222',
+    custom: true,
+    imageKeys: [],
+    category: null,
+    force: null,
+    mechanic: null,
+    level: null,
+    instructions: ['Press'],
+  };
+
+  it('posts the input and parses the created exercise', async () => {
+    const post = vi.fn(() => Promise.resolve(details));
+    const client = { ...clientWith(vi.fn()), post };
+
+    await expect(createExercise(input, client)).resolves.toEqual(details);
+    expect(post).toHaveBeenCalledWith('/exercises', input);
+  });
+
+  it('puts the input to the exercise url', async () => {
+    const put = vi.fn(() => Promise.resolve(details));
+    const client = { ...clientWith(vi.fn()), put };
+
+    await expect(updateExercise(details.id, input, client)).resolves.toEqual(
+      details,
+    );
+    expect(put).toHaveBeenCalledWith(`/exercises/${details.id}`, input);
+  });
+
+  it('rejects a malformed created exercise', async () => {
+    const client = {
+      ...clientWith(vi.fn()),
+      post: vi.fn(() => Promise.resolve({ id: 1 })),
+    };
+
+    await expect(createExercise(input, client)).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE',
+    });
+  });
+
+  it('sends DELETE to the exercise url', async () => {
+    const remove = vi.fn(() => Promise.resolve());
+    const client = { ...clientWith(vi.fn()), delete: remove };
+
+    await deleteExercise(details.id, client);
+
+    expect(remove).toHaveBeenCalledWith(`/exercises/${details.id}`);
+  });
+
+  it('passes API errors through', async () => {
+    const client = {
+      ...clientWith(vi.fn()),
+      post: vi.fn(() =>
+        Promise.reject(new ApiError(409, 'EXERCISE_LIMIT_REACHED', 'limit')),
+      ),
+    };
+
+    await expect(createExercise(input, client)).rejects.toMatchObject({
+      code: 'EXERCISE_LIMIT_REACHED',
+    });
   });
 });

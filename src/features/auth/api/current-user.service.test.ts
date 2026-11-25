@@ -28,8 +28,10 @@ const profile = {
 function clientWith(overrides: Partial<ApiClient>): ApiClient {
   return {
     get: vi.fn(() => Promise.reject(new Error('unexpected GET'))),
+    post: vi.fn(() => Promise.reject(new Error('unexpected POST'))),
     put: vi.fn(() => Promise.reject(new Error('unexpected PUT'))),
     patch: vi.fn(() => Promise.reject(new Error('unexpected PATCH'))),
+    delete: vi.fn(() => Promise.reject(new Error('unexpected DELETE'))),
     ...overrides,
   };
 }

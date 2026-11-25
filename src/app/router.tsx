@@ -11,7 +11,10 @@ import { HomePage } from '@/app/routes/HomePage';
 import { NotFoundPage } from '@/app/routes/NotFoundPage';
 import { PendingScreen } from '@/app/routes/PendingScreen';
 import { RouteErrorPage } from '@/app/routes/RouteErrorPage';
-import { validateCatalogSearch } from '@/features/exercises/model/catalog-search';
+import {
+  validateCatalogSearch,
+  validateNewExerciseSearch,
+} from '@/features/exercises/model/catalog-search';
 import { completeSocialSignIn } from '@/features/auth/model/callback';
 import { requireGuest, requireUser } from '@/features/auth/model/guards';
 
@@ -63,6 +66,27 @@ const exercisesRoute = createRoute({
   ),
 });
 
+const exerciseNewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/exercises/new',
+  validateSearch: validateNewExerciseSearch,
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/exercises'),
+    'ExerciseCreatePage',
+  ),
+});
+
+const exerciseEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/exercises/$exerciseId/edit',
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/exercises'),
+    'ExerciseEditPage',
+  ),
+});
+
 const exerciseRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/exercises/$exerciseId',
@@ -99,6 +123,8 @@ const routeTree = rootRoute.addChildren([
   profileRoute,
   settingsRoute,
   exercisesRoute,
+  exerciseNewRoute,
+  exerciseEditRoute,
   exerciseRoute,
   signInRoute,
   signUpRoute,
