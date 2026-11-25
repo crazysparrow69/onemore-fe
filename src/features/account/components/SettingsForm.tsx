@@ -12,16 +12,11 @@ import type {
   UserPatch,
 } from '@/features/auth/api/current-user.service';
 import { fieldError } from '@/features/auth/components/field-error';
-import { LANGUAGES, type Language } from '@/shared/i18n/language';
+import { LANGUAGE_NAMES, LANGUAGES } from '@/shared/i18n/language';
 import { toast } from '@/shared/lib/toast';
 import { Button } from '@/shared/ui/button';
 import { SegmentedControl } from '@/shared/ui/segmented-control';
 import { SelectField } from '@/shared/ui/select-field';
-
-const LANGUAGE_NAMES: Record<Language, string> = {
-  en: 'English',
-  uk: 'Українська',
-};
 
 function valuesOf(user: CurrentUser): SettingsValues {
   return {

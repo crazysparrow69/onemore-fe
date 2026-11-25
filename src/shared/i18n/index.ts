@@ -1,10 +1,21 @@
 import i18next from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import en from '@/shared/i18n/locales/en.json';
-import uk from '@/shared/i18n/locales/uk.json';
-import { readStoredLanguage } from '@/shared/i18n/language';
+import { LANGUAGES, readStoredLanguage } from '@/shared/i18n/language';
 
 export const i18n = i18next;
+
+const localeModules = import.meta.glob<{ default: typeof en }>(
+  './locales/*.json',
+  { eager: true },
+);
+
+const resources = Object.fromEntries(
+  LANGUAGES.map((language) => [
+    language,
+    { translation: localeModules[`./locales/${language}.json`]?.default ?? en },
+  ]),
+);
 
 function setDocumentLanguage(language: string) {
   document.documentElement.lang = language;
@@ -13,10 +24,7 @@ function setDocumentLanguage(language: string) {
 void i18n.use(initReactI18next).init({
   lng: readStoredLanguage() ?? 'uk',
   fallbackLng: 'en',
-  resources: {
-    en: { translation: en },
-    uk: { translation: uk },
-  },
+  resources,
   interpolation: { escapeValue: false },
   initAsync: false,
 });
