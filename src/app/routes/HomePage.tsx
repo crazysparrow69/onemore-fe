@@ -34,6 +34,9 @@ export function HomePage() {
           </span>
         </Link>
       ) : null}
+      <Button asChild className="self-start">
+        <Link to="/exercises">{t('home.exercises')}</Link>
+      </Button>
       <Link to="/settings" className="self-start text-primary">
         {t('home.settings')}
       </Link>

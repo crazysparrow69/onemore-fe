@@ -85,6 +85,32 @@ describe('createApiClient', () => {
     expect(authorization(callAt(calls, 0))).toBe('Bearer token-1');
   });
 
+  it('sends query params and skips undefined ones', async () => {
+    const calls: InternalAxiosRequestConfig[] = [];
+    const adapter: AxiosAdapter = (config) => {
+      calls.push(config);
+      return Promise.resolve(response(config, 200, {}));
+    };
+    const client = createApiClient({
+      adapter,
+      getAccessToken: () => Promise.resolve(null),
+      refreshAccessToken: () => Promise.resolve(null),
+      onUnauthorized: vi.fn(),
+    });
+
+    await client.get('/exercises', {
+      q: 'bench',
+      offset: 0,
+      muscle: undefined,
+    });
+
+    expect(callAt(calls, 0).params).toEqual({
+      q: 'bench',
+      offset: 0,
+      muscle: undefined,
+    });
+  });
+
   it('retries once after 401 and then signs out', async () => {
     const authorizations: string[] = [];
     const adapter: AxiosAdapter = (config) => {

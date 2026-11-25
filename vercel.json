@@ -8,7 +8,7 @@
   ],
   "headers": [
     {
-      "source": "/exercises/(.*)",
+      "source": "/exercises/(.*)\\.webp",
       "headers": [
         {
           "key": "Cache-Control",

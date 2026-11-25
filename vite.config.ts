@@ -27,8 +27,8 @@ export default defineConfig(({ mode }) => {
           scope: '/',
           display: 'standalone',
           orientation: 'portrait',
-          background_color: '#0a0a0a',
-          theme_color: '#0a0a0a',
+          background_color: '#000000',
+          theme_color: '#000000',
           icons: [
             {
               src: '/icons/icon-192.png',
@@ -58,6 +58,17 @@ export default defineConfig(({ mode }) => {
             {
               urlPattern: ({ url }) => url.pathname.startsWith('/api/'),
               handler: 'NetworkOnly',
+            },
+            {
+              urlPattern: ({ url }) =>
+                url.pathname.startsWith('/exercises/') &&
+                url.pathname.endsWith('.webp'),
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'exercise-photos',
+                expiration: { maxEntries: 300 },
+                cacheableResponse: { statuses: [200] },
+              },
             },
           ],
         },

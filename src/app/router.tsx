@@ -11,6 +11,7 @@ import { HomePage } from '@/app/routes/HomePage';
 import { NotFoundPage } from '@/app/routes/NotFoundPage';
 import { PendingScreen } from '@/app/routes/PendingScreen';
 import { RouteErrorPage } from '@/app/routes/RouteErrorPage';
+import { validateCatalogSearch } from '@/features/exercises/model/catalog-search';
 import { completeSocialSignIn } from '@/features/auth/model/callback';
 import { requireGuest, requireUser } from '@/features/auth/model/guards';
 
@@ -51,6 +52,27 @@ const settingsRoute = createRoute({
   ),
 });
 
+const exercisesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/exercises',
+  validateSearch: validateCatalogSearch,
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/exercises'),
+    'ExerciseListPage',
+  ),
+});
+
+const exerciseRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/exercises/$exerciseId',
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/exercises'),
+    'ExercisePage',
+  ),
+});
+
 const signInRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sign-in',
@@ -76,6 +98,8 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   profileRoute,
   settingsRoute,
+  exercisesRoute,
+  exerciseRoute,
   signInRoute,
   signUpRoute,
   callbackRoute,
@@ -91,6 +115,7 @@ export function createAppRouter(
     context: { queryClient },
     defaultPendingComponent: PendingScreen,
     defaultPreload: 'intent',
+    scrollRestoration: true,
   });
 }
 

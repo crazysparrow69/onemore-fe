@@ -8,14 +8,20 @@ const localeModules = import.meta.glob<{ default: unknown }>(
   { eager: true },
 );
 
+const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/;
+
 function leafKeys(value: unknown, prefix = ''): string[] {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    return prefix.length > 0 ? [prefix] : [];
+    return prefix.length > 0 ? [prefix.replace(PLURAL_SUFFIX, '')] : [];
   }
 
-  return Object.entries(value).flatMap(([key, child]) =>
-    leafKeys(child, prefix.length > 0 ? `${prefix}.${key}` : key),
-  );
+  return [
+    ...new Set(
+      Object.entries(value).flatMap(([key, child]) =>
+        leafKeys(child, prefix.length > 0 ? `${prefix}.${key}` : key),
+      ),
+    ),
+  ];
 }
 
 describe('i18n', () => {

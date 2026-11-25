@@ -15,8 +15,10 @@ declare module 'axios' {
   }
 }
 
+export type ApiParams = Record<string, string | number | undefined>;
+
 export interface ApiClient {
-  get(path: string): Promise<unknown>;
+  get(path: string, params?: ApiParams): Promise<unknown>;
   put(path: string, body: unknown): Promise<unknown>;
   patch(path: string, body: unknown): Promise<unknown>;
 }
@@ -78,8 +80,8 @@ export function createApiClient(deps: ApiClientDeps): ApiClient {
   );
 
   return {
-    async get(path) {
-      const response = await instance.get<unknown>(path);
+    async get(path, params) {
+      const response = await instance.get<unknown>(path, { params });
       return response.data;
     },
     async put(path, body) {
