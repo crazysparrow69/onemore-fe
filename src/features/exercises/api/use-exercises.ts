@@ -78,6 +78,7 @@ export function useExercise(id: string) {
               mechanic: null,
               level: null,
               instructions: [],
+              typeLocked: false,
             };
           }
         }

@@ -24,6 +24,7 @@ const details: ExerciseDetails = {
   mechanic: null,
   level: null,
   instructions: ['Sit down', 'Press'],
+  typeLocked: false,
 };
 
 describe('exercise form model', () => {

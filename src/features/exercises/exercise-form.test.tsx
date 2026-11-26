@@ -98,8 +98,13 @@ const dictionaries: ExerciseDictionaries = {
     { id: 'machine', label: 'Тренажер' },
   ],
   types: [
-    { id: 'weight_reps', label: 'Вага і повтори', example: 'Жим лежачи' },
-    { id: 'duration', label: 'Тривалість', example: 'Планка' },
+    {
+      id: 'weight_reps',
+      label: 'Вага і повтори',
+      example: 'Жим лежачи',
+      fields: [],
+    },
+    { id: 'duration', label: 'Тривалість', example: 'Планка', fields: [] },
   ],
   categories: [],
   levels: [],
@@ -122,6 +127,7 @@ const own: ExerciseDetails = {
   mechanic: null,
   level: null,
   instructions: ['Сядьте', 'Вижміть'],
+  typeLocked: false,
 };
 
 async function renderAt(path: string) {

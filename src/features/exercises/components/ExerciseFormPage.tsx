@@ -45,20 +45,23 @@ function SelectRow({
   value,
   placeholder,
   invalid,
+  disabled = false,
   onClick,
 }: {
   label: string;
   value: string;
   placeholder: string;
   invalid: boolean;
+  disabled?: boolean;
   onClick: () => void;
 }) {
   return (
     <button
       type="button"
       aria-invalid={invalid || undefined}
+      disabled={disabled}
       onClick={onClick}
-      className="flex items-center justify-between gap-3 rounded-xl bg-secondary px-4 py-3 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:ring-2 aria-invalid:ring-destructive"
+      className="disabled:pointer-events-none disabled:opacity-60 flex items-center justify-between gap-3 rounded-xl bg-secondary px-4 py-3 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:ring-2 aria-invalid:ring-destructive"
     >
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="text-sm text-muted-foreground">{label}</span>
@@ -70,10 +73,12 @@ function SelectRow({
           {value.length > 0 ? value : placeholder}
         </span>
       </span>
-      <ChevronRight
-        className="size-5 shrink-0 text-muted-foreground"
-        aria-hidden
-      />
+      {disabled ? null : (
+        <ChevronRight
+          className="size-5 shrink-0 text-muted-foreground"
+          aria-hidden
+        />
+      )}
     </button>
   );
 }
@@ -81,9 +86,11 @@ function SelectRow({
 function ExerciseForm({
   initial,
   exerciseId,
+  typeLocked = false,
 }: {
   initial: ExerciseFormValues;
   exerciseId?: string;
+  typeLocked?: boolean;
 }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -135,6 +142,10 @@ function ExerciseForm({
         }
         if (isApiError(error) && error.code === 'EXERCISE_LIMIT_REACHED') {
           toast.error(t('exerciseForm.limitReached'));
+          return;
+        }
+        if (isApiError(error) && error.code === 'EXERCISE_TYPE_LOCKED') {
+          toast.error(t('exerciseForm.typeLocked'));
           return;
         }
         toast.error(t('errors.generic.description'));
@@ -242,10 +253,16 @@ function ExerciseForm({
             value={typeLabel ?? ''}
             placeholder={t('exerciseForm.choose')}
             invalid={Boolean(errors.type)}
+            disabled={typeLocked}
             onClick={() => {
               setSheet('type');
             }}
           />
+          {typeLocked ? (
+            <Text size="sm" tone="muted">
+              {t('exerciseForm.typeLockedHint')}
+            </Text>
+          ) : null}
           <SelectRow
             label={t('exerciseForm.primaryMuscle')}
             value={values.primary.map((id) => labels.muscle(id)).join(', ')}
@@ -449,6 +466,7 @@ function ExerciseEditPage() {
     <ExerciseForm
       key={data.id}
       exerciseId={data.id}
+      typeLocked={data.typeLocked}
       initial={formValuesOf(data)}
     />
   );

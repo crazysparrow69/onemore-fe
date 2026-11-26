@@ -1,6 +1,6 @@
 import { getRouteApi, Link } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   useExerciseDictionaries,
@@ -17,42 +17,20 @@ import {
   filtersFromSearch,
   hasFilters,
   joinIds,
+  type CatalogSearch,
 } from '@/features/exercises/model/catalog-search';
+import type { ExerciseListItem } from '@/features/exercises/api/exercises.service';
 import { useDebouncedCallback } from '@/shared/lib/use-debounced-callback';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
+import { LoadMore } from '@/shared/ui/load-more';
 import { SearchField } from '@/shared/ui/search-field';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
 
-const route = getRouteApi('/exercises');
+const listRoute = getRouteApi('/exercises');
 const SEARCH_DELAY_MS = 300;
 const SKELETON_ROWS = 8;
-
-function LoadMore({ onVisible }: { onVisible: () => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const node = ref.current;
-    if (!node || typeof IntersectionObserver === 'undefined') {
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          onVisible();
-        }
-      },
-      { rootMargin: '400px' },
-    );
-    observer.observe(node);
-    return () => {
-      observer.disconnect();
-    };
-  }, [onVisible]);
-
-  return <div ref={ref} className="h-1" aria-hidden />;
-}
 
 function RowsSkeleton() {
   return (
@@ -70,10 +48,25 @@ function RowsSkeleton() {
   );
 }
 
-function ExerciseListPage() {
+export interface ExercisePick {
+  title: string;
+  backTo: '/workout';
+  selected: ReadonlyMap<string, ExerciseListItem>;
+  onToggle: (exercise: ExerciseListItem) => void;
+  confirmLabel: string;
+  onConfirm: () => void;
+}
+
+function ExerciseCatalog({
+  search,
+  onSearchChange,
+  pick,
+}: {
+  search: CatalogSearch;
+  onSearchChange: (update: (previous: CatalogSearch) => CatalogSearch) => void;
+  pick?: ExercisePick;
+}) {
   const { t } = useTranslation();
-  const search = route.useSearch();
-  const navigate = route.useNavigate();
   const filters = filtersFromSearch(search);
   const [text, setText] = useState(filters.q);
   const [sheet, setSheet] = useState<FilterField | null>(null);
@@ -83,24 +76,21 @@ function ExerciseListPage() {
 
   const applyQuery = useDebouncedCallback((value: string) => {
     const q = value.trim();
-    void navigate({
-      search: (previous) => ({ ...previous, q: q.length > 0 ? q : undefined }),
-      replace: true,
-    });
+    onSearchChange((previous) => ({
+      ...previous,
+      q: q.length > 0 ? q : undefined,
+    }));
   }, SEARCH_DELAY_MS);
 
   function applyIds(field: FilterField, ids: string[]) {
     setSheet(null);
-    void navigate({
-      search: (previous) => ({ ...previous, [field]: joinIds(ids) }),
-      replace: true,
-    });
+    onSearchChange((previous) => ({ ...previous, [field]: joinIds(ids) }));
   }
 
   function reset() {
     applyQuery.cancel();
     setText('');
-    void navigate({ search: {}, replace: true });
+    onSearchChange(() => ({}));
   }
 
   const muscleSections: FilterSection[] = (
@@ -150,23 +140,27 @@ function ExerciseListPage() {
       <header className="sticky top-0 z-10 flex flex-col gap-3 bg-background px-4 pt-4 pb-3">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center">
           <Link
-            to="/"
+            to={pick ? pick.backTo : '/'}
             aria-label={t('common.back')}
             className="inline-flex size-10 items-center justify-center rounded-full bg-secondary outline-none hover:bg-secondary/80 focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
             <ArrowLeft className="size-5" aria-hidden />
           </Link>
           <Text as="h1" size="lg" weight="semibold" className="text-center">
-            {t('catalog.title')}
+            {pick ? pick.title : t('catalog.title')}
           </Text>
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="justify-self-end text-primary"
-          >
-            <Link to="/exercises/new">{t('catalog.create')}</Link>
-          </Button>
+          {pick ? (
+            <span />
+          ) : (
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="justify-self-end text-primary"
+            >
+              <Link to="/exercises/new">{t('catalog.create')}</Link>
+            </Button>
+          )}
         </div>
         <SearchField
           value={text}
@@ -205,20 +199,22 @@ function ExerciseListPage() {
             filters.mine ? 'text-primary ring-2 ring-primary' : '',
           )}
           onClick={() => {
-            void navigate({
-              search: (previous) => ({
-                ...previous,
-                mine: filters.mine ? undefined : true,
-              }),
-              replace: true,
-            });
+            onSearchChange((previous) => ({
+              ...previous,
+              mine: filters.mine ? undefined : true,
+            }));
           }}
         >
           {t('catalog.mine')}
         </button>
       </header>
 
-      <section className="flex flex-1 flex-col gap-1 px-4 pb-8">
+      <section
+        className={cn(
+          'flex flex-1 flex-col gap-1 px-4',
+          pick ? 'pb-28' : 'pb-8',
+        )}
+      >
         <Text as="h2" size="lg" weight="semibold" className="py-2">
           {filtered && list.data
             ? t('catalog.found', { count: total })
@@ -254,16 +250,18 @@ function ExerciseListPage() {
                 {t('catalog.clearFilters')}
               </Button>
             ) : null}
-            <Button asChild variant="secondary">
-              <Link
-                to="/exercises/new"
-                search={filters.q.length > 0 ? { name: filters.q } : {}}
-              >
-                {filters.q.length > 0
-                  ? t('catalog.createNamed', { name: filters.q })
-                  : t('catalog.create')}
-              </Link>
-            </Button>
+            {pick ? null : (
+              <Button asChild variant="secondary">
+                <Link
+                  to="/exercises/new"
+                  search={filters.q.length > 0 ? { name: filters.q } : {}}
+                >
+                  {filters.q.length > 0
+                    ? t('catalog.createNamed', { name: filters.q })
+                    : t('catalog.create')}
+                </Link>
+              </Button>
+            )}
           </div>
         ) : null}
 
@@ -274,6 +272,16 @@ function ExerciseListPage() {
                 key={exercise.id}
                 exercise={exercise}
                 labels={labels}
+                pick={
+                  pick
+                    ? {
+                        selected: pick.selected.has(exercise.id),
+                        onToggle: () => {
+                          pick.onToggle(exercise);
+                        },
+                      }
+                    : undefined
+                }
               />
             ))}
           </ul>
@@ -288,6 +296,20 @@ function ExerciseListPage() {
           />
         ) : null}
       </section>
+
+      {pick ? (
+        <div className="fixed inset-x-0 bottom-0 z-20 mx-auto w-full max-w-md bg-background px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <Button
+            type="button"
+            fullWidth
+            size="lg"
+            disabled={pick.selected.size === 0 || !dictionaries.data}
+            onClick={pick.onConfirm}
+          >
+            {pick.confirmLabel}
+          </Button>
+        </div>
+      ) : null}
 
       <FilterSheet
         open={sheet === 'equipment'}
@@ -321,4 +343,21 @@ function ExerciseListPage() {
   );
 }
 
-export { ExerciseListPage };
+function ExerciseListPage() {
+  const search = listRoute.useSearch();
+  const navigate = listRoute.useNavigate();
+
+  return (
+    <ExerciseCatalog
+      search={search}
+      onSearchChange={(update) => {
+        void navigate({
+          search: (previous) => update(previous),
+          replace: true,
+        });
+      }}
+    />
+  );
+}
+
+export { ExerciseCatalog, ExerciseListPage };

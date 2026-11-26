@@ -108,6 +108,7 @@ describe('fetchExercise', () => {
       mechanic: 'compound',
       level: 'beginner',
       instructions: ['Lie down', 'Press'],
+      typeLocked: false,
     };
     const get = vi.fn(() => Promise.resolve(details));
 
@@ -162,6 +163,7 @@ describe('creating, replacing and deleting an own exercise', () => {
     mechanic: null,
     level: null,
     instructions: ['Press'],
+    typeLocked: false,
   };
 
   it('posts the input and parses the created exercise', async () => {

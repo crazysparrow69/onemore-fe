@@ -1,7 +1,11 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useRouter } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import { initials } from '@/features/account/model/initials';
 import { useCurrentUser, useSignOut } from '@/features/auth/api/use-auth';
+import {
+  useDraftStore,
+  useWorkoutDraft,
+} from '@/features/workouts/model/draft-store';
 import { Avatar } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';
 import { Text } from '@/shared/ui/text';
@@ -10,6 +14,9 @@ export function HomePage() {
   const { t } = useTranslation();
   const user = useCurrentUser();
   const signOut = useSignOut();
+  const router = useRouter();
+  const draft = useWorkoutDraft(user.data?.id);
+  const startDraft = useDraftStore((state) => state.start);
 
   return (
     <main className="flex flex-1 flex-col justify-center gap-4 px-4">
@@ -34,6 +41,23 @@ export function HomePage() {
           </span>
         </Link>
       ) : null}
+      {user.data ? (
+        <Button
+          type="button"
+          className="self-start"
+          onClick={() => {
+            if (!draft) {
+              startDraft(user.data.id);
+            }
+            void router.navigate({ to: '/workout' });
+          }}
+        >
+          {draft ? t('home.continueWorkout') : t('home.startWorkout')}
+        </Button>
+      ) : null}
+      <Link to="/workouts" className="self-start text-primary">
+        {t('home.history')}
+      </Link>
       <Button asChild className="self-start">
         <Link to="/exercises">{t('home.exercises')}</Link>
       </Button>

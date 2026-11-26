@@ -30,12 +30,23 @@ const detailsSchema = listItemSchema.extend({
   mechanic: z.string().nullable(),
   level: z.string().nullable(),
   instructions: z.array(z.string()),
+  typeLocked: z.boolean(),
 });
 
 const optionSchema = z.object({ id: z.string(), label: z.string() });
 
 const muscleOptionSchema = optionSchema.extend({ primaryOnly: z.boolean() });
-const typeOptionSchema = optionSchema.extend({ example: z.string() });
+export const setFieldRuleSchema = z.object({
+  id: z.enum(['weightKg', 'reps', 'durationS', 'distanceM']),
+  requirement: z.enum(['required', 'optional', 'any_of']),
+  min: z.number(),
+  max: z.number(),
+});
+
+const typeOptionSchema = optionSchema.extend({
+  example: z.string(),
+  fields: z.array(setFieldRuleSchema),
+});
 
 const dictionariesSchema = z.object({
   locale: z.string(),

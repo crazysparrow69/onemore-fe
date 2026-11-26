@@ -109,6 +109,7 @@ const details: ExerciseDetails = {
   mechanic: null,
   level: 'beginner',
   instructions: ['Ляжте на лаву', 'Опустіть штангу до грудей'],
+  typeLocked: false,
 };
 
 async function renderAt(path: string) {

@@ -1,0 +1,250 @@
+import { Navigate, useRouter } from '@tanstack/react-router';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { CurrentUser } from '@/features/auth/api/current-user.service';
+import { useCurrentUser } from '@/features/auth/api/use-auth';
+import { useSaveWorkout } from '@/features/workouts/api/use-workouts';
+import {
+  completedSetCount,
+  toWorkoutPayload,
+  unfinishedSetCount,
+  type Draft,
+} from '@/features/workouts/model/draft';
+import {
+  useDraftStore,
+  useWorkoutDraft,
+} from '@/features/workouts/model/draft-store';
+import {
+  fromLocalInput,
+  parseInteger,
+  toLocalInput,
+} from '@/features/workouts/model/format';
+import { isApiError } from '@/shared/api/error';
+import { toast } from '@/shared/lib/toast';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
+import { Text } from '@/shared/ui/text';
+import { TextField } from '@/shared/ui/text-field';
+import { Textarea } from '@/shared/ui/textarea';
+
+type ErrorKey =
+  | 'workout.errors.empty'
+  | 'workout.errors.time'
+  | 'workout.errors.values'
+  | 'workout.errors.exerciseChanged'
+  | 'workout.errors.network'
+  | 'workout.errors.generic';
+
+function errorKey(error: unknown): ErrorKey {
+  if (!isApiError(error)) {
+    return 'workout.errors.generic';
+  }
+  switch (error.code) {
+    case 'WORKOUT_EMPTY':
+      return 'workout.errors.empty';
+    case 'WORKOUT_TIME_INVALID':
+      return 'workout.errors.time';
+    case 'SET_VALUES_INVALID':
+    case 'VALIDATION_FAILED':
+      return 'workout.errors.values';
+    case 'EXERCISE_CHANGED':
+      return 'workout.errors.exerciseChanged';
+    case 'NETWORK_ERROR':
+      return 'workout.errors.network';
+    default:
+      return 'workout.errors.generic';
+  }
+}
+
+function FinishForm({ draft, user }: { draft: Draft; user: CurrentUser }) {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const setMeta = useDraftStore((state) => state.setMeta);
+  const discard = useDraftStore((state) => state.discard);
+  const save = useSaveWorkout();
+  const [openedAt] = useState(() => new Date());
+  const [startedAt, setStartedAt] = useState(() =>
+    toLocalInput(draft.startedAt),
+  );
+  const [minutes, setMinutes] = useState(() =>
+    String(
+      Math.max(
+        1,
+        Math.round(
+          (openedAt.getTime() - new Date(draft.startedAt).getTime()) / 60_000,
+        ),
+      ),
+    ),
+  );
+
+  const units = user.units;
+  const completed = completedSetCount(draft);
+  const unfinished = unfinishedSetCount(draft);
+  const start = fromLocalInput(startedAt);
+  const length = parseInteger(minutes);
+  const valid = start !== null && length !== null && length > 0;
+
+  function submit() {
+    if (start === null || length === null) {
+      return;
+    }
+    const prepared = { ...draft, startedAt: start };
+    const endedAt = new Date(new Date(start).getTime() + length * 60_000);
+    const timeZone =
+      Intl.DateTimeFormat().resolvedOptions().timeZone || user.timeZone;
+    save.mutate(
+      {
+        id: prepared.id,
+        payload: toWorkoutPayload(prepared, {
+          units,
+          timeZone,
+          endedAt,
+        }),
+      },
+      {
+        onSuccess: (workout) => {
+          void router
+            .navigate({
+              to: '/workouts/$workoutId',
+              params: { workoutId: workout.id },
+              replace: true,
+            })
+            .then(() => {
+              discard();
+              toast.success(t('workout.saved'));
+            });
+        },
+        onError: (error) => {
+          toast.error(t(errorKey(error)));
+        },
+      },
+    );
+  }
+
+  return (
+    <main className="flex flex-1 flex-col">
+      <header className="sticky top-0 z-10 grid grid-cols-[1fr_auto_1fr] items-center bg-background px-4 pt-4 pb-3">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="justify-self-start px-2"
+          onClick={() => {
+            void router.navigate({ to: '/workout', replace: true });
+          }}
+        >
+          {t('common.back')}
+        </Button>
+        <Text as="h1" size="lg" weight="semibold" className="text-center">
+          {t('workout.finishTitle')}
+        </Text>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="justify-self-end px-2 text-primary"
+          disabled={completed === 0 || !valid}
+          loading={save.isPending}
+          onClick={submit}
+        >
+          {t('workout.save')}
+        </Button>
+      </header>
+
+      <form
+        className="flex flex-1 flex-col gap-4 px-4 pb-10"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (completed > 0 && valid) {
+            submit();
+          }
+        }}
+      >
+        <TextField
+          label={t('workout.name')}
+          variant="outline"
+          value={draft.name}
+          maxLength={80}
+          autoComplete="off"
+          placeholder={t('workout.namePlaceholder')}
+          onChange={(event) => {
+            setMeta({ name: event.target.value });
+          }}
+        />
+        <div className="flex flex-col gap-2">
+          <Text as="label" htmlFor="workout-notes" size="sm" tone="muted">
+            {t('workout.notesLabel')}
+          </Text>
+          <Textarea
+            id="workout-notes"
+            value={draft.notes}
+            maxLength={1000}
+            placeholder={t('workout.notesPlaceholder')}
+            onChange={(event) => {
+              setMeta({ notes: event.target.value });
+            }}
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-4">
+          <div className="flex flex-col gap-2">
+            <Text as="label" htmlFor="workout-start" size="sm" tone="muted">
+              {t('workout.startedAt')}
+            </Text>
+            <Input
+              id="workout-start"
+              type="datetime-local"
+              variant="outline"
+              value={startedAt}
+              aria-invalid={start === null ? true : undefined}
+              onChange={(event) => {
+                setStartedAt(event.target.value);
+              }}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Text as="label" htmlFor="workout-minutes" size="sm" tone="muted">
+              {t('workout.duration')}
+            </Text>
+            <Input
+              id="workout-minutes"
+              inputMode="numeric"
+              variant="outline"
+              value={minutes}
+              aria-invalid={length === null || length === 0 ? true : undefined}
+              onChange={(event) => {
+                if (/^\d{0,4}$/.test(event.target.value)) {
+                  setMinutes(event.target.value);
+                }
+              }}
+            />
+          </div>
+        </div>
+        {unfinished > 0 ? (
+          <Text size="sm" tone="muted">
+            {t('workout.unfinished', { count: unfinished })}
+          </Text>
+        ) : null}
+        {completed === 0 ? (
+          <Text size="sm" tone="danger">
+            {t('workout.errors.empty')}
+          </Text>
+        ) : null}
+      </form>
+    </main>
+  );
+}
+
+function FinishWorkoutPage() {
+  const user = useCurrentUser();
+  const draft = useWorkoutDraft(user.data?.id);
+
+  if (user.isPending) {
+    return <main className="flex flex-1" aria-hidden />;
+  }
+  if (!draft || !user.data) {
+    return <Navigate to="/" replace />;
+  }
+  return <FinishForm draft={draft} user={user.data} />;
+}
+
+export { FinishWorkoutPage };

@@ -97,6 +97,57 @@ const exerciseRoute = createRoute({
   ),
 });
 
+const workoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/workout',
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/workouts'),
+    'ActiveWorkoutPage',
+  ),
+});
+
+const workoutAddRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/workout/add',
+  validateSearch: validateCatalogSearch,
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/workouts'),
+    'ExercisePickerPage',
+  ),
+});
+
+const workoutFinishRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/workout/finish',
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/workouts'),
+    'FinishWorkoutPage',
+  ),
+});
+
+const workoutsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/workouts',
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/workouts'),
+    'WorkoutHistoryPage',
+  ),
+});
+
+const workoutDetailsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/workouts/$workoutId',
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/workouts'),
+    'WorkoutDetailsPage',
+  ),
+});
+
 const signInRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sign-in',
@@ -126,6 +177,11 @@ const routeTree = rootRoute.addChildren([
   exerciseNewRoute,
   exerciseEditRoute,
   exerciseRoute,
+  workoutRoute,
+  workoutAddRoute,
+  workoutFinishRoute,
+  workoutsRoute,
+  workoutDetailsRoute,
   signInRoute,
   signUpRoute,
   callbackRoute,
