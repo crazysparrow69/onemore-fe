@@ -219,7 +219,9 @@
       "signedLb": "+ФУНТ",
       "reps": "ПОВТ.",
       "durationS": "ЧАС",
-      "distanceM": "КМ"
+      "distanceM": "КМ",
+      "previous": "МИНУЛ.",
+      "previousSet": "Підставити значення минулого разу для підходу {{number}}"
     },
     "note": "Нотатка",
     "notePlaceholder": "Нотатка до вправи",
@@ -288,6 +290,18 @@
     "warmupMark": "Р",
     "dropMark": "Д",
     "failureMark": "В",
-    "repsShort": "повт."
+    "repsShort": "повт.",
+    "rest": {
+      "title": "Відпочинок",
+      "timer": "Таймер відпочинку",
+      "button": "Відпочинок: {{value}}",
+      "off": "Вимкнено",
+      "offShort": "вимк.",
+      "skip": "Пропустити",
+      "sound": "Звук таймера",
+      "finished": "Відпочинок закінчився",
+      "finishedAgo": "Відпочинок закінчився {{time}} тому",
+      "exerciseTitle": "Відпочинок: {{name}}"
+    }
   }
 }

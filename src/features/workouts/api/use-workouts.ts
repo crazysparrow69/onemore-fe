@@ -9,6 +9,7 @@ import { workoutsKeys } from '@/features/workouts/api/workouts.keys';
 import {
   deleteWorkout,
   fetchWorkout,
+  fetchPreviousSets,
   fetchWorkouts,
   saveWorkout,
 } from '@/features/workouts/api/workouts.service';
@@ -20,6 +21,16 @@ export function useWorkoutList() {
     queryFn: ({ pageParam }) => fetchWorkouts(pageParam),
     initialPageParam: 0,
     getNextPageParam: (last) => last.nextOffset ?? undefined,
+  });
+}
+
+export function usePreviousSets(exerciseIds: readonly string[]) {
+  return useQuery({
+    queryKey: workoutsKeys.previous(exerciseIds),
+    queryFn: () => fetchPreviousSets(exerciseIds),
+    enabled: exerciseIds.length > 0,
+    gcTime: 0,
+    staleTime: 0,
   });
 }
 
@@ -40,6 +51,9 @@ export function useSaveWorkout() {
       queryClient.setQueryData(workoutsKeys.detail(workout.id), workout);
       void queryClient.invalidateQueries({ queryKey: workoutsKeys.list() });
       void queryClient.invalidateQueries({ queryKey: exercisesKeys.all });
+      void queryClient.invalidateQueries({
+        queryKey: [...workoutsKeys.all, 'previous'],
+      });
     },
   });
 }

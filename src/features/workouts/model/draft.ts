@@ -1,6 +1,13 @@
 import { z } from 'zod';
 import type { Units } from '@/features/auth/api/current-user.service';
 import {
+  previousExerciseSchema,
+  previousValues,
+  matchPrevious,
+  type PreviousExercise,
+} from '@/features/workouts/model/previous';
+import { restSchema, startRest } from '@/features/workouts/model/rest';
+import {
   parseDecimal,
   parseDuration,
   parseInteger,
@@ -46,6 +53,8 @@ export const draftExerciseSchema = z.object({
   custom: z.boolean(),
   fields: z.array(draftFieldRuleSchema),
   notes: z.string(),
+  restSeconds: z.number().nullable().optional(),
+  previous: previousExerciseSchema.nullable().optional(),
   sets: z.array(draftSetSchema),
 });
 export type DraftExercise = z.infer<typeof draftExerciseSchema>;
@@ -55,6 +64,7 @@ export const draftSchema = z.object({
   startedAt: z.string(),
   name: z.string(),
   notes: z.string(),
+  rest: restSchema.nullable().optional(),
   exercises: z.array(draftExerciseSchema),
 });
 export type Draft = z.infer<typeof draftSchema>;
@@ -121,6 +131,7 @@ export function addExercises(
       custom: item.custom,
       fields: item.fields,
       notes: '',
+      restSeconds: null,
       sets: [emptySet(newId())],
     }));
   return { ...draft, exercises: [...draft.exercises, ...added] };
@@ -142,6 +153,7 @@ function mapExercise(
 export function removeExercise(draft: Draft, exerciseId: string): Draft {
   return {
     ...draft,
+    rest: draft.rest?.exerciseId === exerciseId ? null : draft.rest,
     exercises: draft.exercises.filter((exercise) => exercise.id !== exerciseId),
   };
 }
@@ -194,10 +206,11 @@ export function removeSet(
   exerciseId: string,
   setId: string,
 ): Draft {
-  return mapExercise(draft, exerciseId, (exercise) => ({
+  const next = mapExercise(draft, exerciseId, (exercise) => ({
     ...exercise,
     sets: exercise.sets.filter((set) => set.id !== setId),
   }));
+  return next.rest?.setId === setId ? { ...next, rest: null } : next;
 }
 
 function mapSet(
@@ -245,11 +258,117 @@ export function suggestedValue(
   return previous?.[key] ?? '';
 }
 
+export function lastTimeValues(
+  exercise: DraftExercise,
+  index: number,
+  units: Units,
+): Pick<DraftSet, SetValueKey> | null {
+  const match = matchPrevious(exercise.sets, exercise.previous)[index];
+  return match ? previousValues(match, units) : null;
+}
+
+export function placeholderValue(
+  exercise: DraftExercise,
+  index: number,
+  key: SetValueKey,
+  units: Units,
+): string {
+  const last = lastTimeValues(exercise, index, units)?.[key] ?? '';
+  return last.length > 0
+    ? last
+    : suggestedValue(exercise.sets[index - 1] ?? null, key);
+}
+
+function isPristine(set: DraftSet): boolean {
+  return (
+    set.completedAt === null &&
+    set.weight === '' &&
+    set.reps === '' &&
+    set.duration === '' &&
+    set.distance === ''
+  );
+}
+
+export function applyPrevious(
+  draft: Draft,
+  requested: readonly string[],
+  items: readonly (PreviousExercise & { exerciseId: string })[],
+  newId: IdFactory,
+): Draft {
+  return {
+    ...draft,
+    exercises: draft.exercises.map((exercise) => {
+      if (
+        exercise.previous !== undefined ||
+        !requested.includes(exercise.exerciseId)
+      ) {
+        return exercise;
+      }
+      const found = items.find(
+        (item) => item.exerciseId === exercise.exerciseId,
+      );
+      if (!found) {
+        return { ...exercise, previous: null };
+      }
+      const previous: PreviousExercise = {
+        workoutId: found.workoutId,
+        startedAt: found.startedAt,
+        localDate: found.localDate,
+        restSeconds: found.restSeconds,
+        sets: found.sets,
+      };
+      const shape = exercise.sets.every(
+        (set) => isPristine(set) && set.kind === 'working',
+      );
+      const sets =
+        shape && previous.sets.length > 0
+          ? previous.sets
+              .slice(0, MAX_SETS)
+              .map((set) => emptySet(newId(), set.kind))
+          : exercise.sets;
+      return {
+        ...exercise,
+        previous,
+        restSeconds: exercise.restSeconds ?? previous.restSeconds,
+        sets,
+      };
+    }),
+  };
+}
+
+export function applyPreviousToSet(
+  draft: Draft,
+  exerciseId: string,
+  setId: string,
+  units: Units,
+): Draft {
+  return mapExercise(draft, exerciseId, (exercise) => {
+    const index = exercise.sets.findIndex((set) => set.id === setId);
+    const values = lastTimeValues(exercise, index, units);
+    const target = exercise.sets[index];
+    if (!values || target?.completedAt !== null) {
+      return exercise;
+    }
+    const patch: Partial<Pick<DraftSet, SetValueKey>> = {};
+    for (const rule of exercise.fields) {
+      const key = FIELD_KEYS[rule.id];
+      patch[key] = values[key];
+    }
+    return {
+      ...exercise,
+      sets: exercise.sets.map((set) =>
+        set.id === setId ? { ...set, ...patch } : set,
+      ),
+    };
+  });
+}
+
 export function toggleSet(
   draft: Draft,
   exerciseId: string,
   setId: string,
   now: Date,
+  units: Units = 'kg',
 ): { draft: Draft; done: boolean } {
   const exercise = draft.exercises.find((item) => item.id === exerciseId);
   const target = exercise?.sets.find((item) => item.id === setId);
@@ -257,31 +376,37 @@ export function toggleSet(
     return { draft, done: false };
   }
   if (target.completedAt !== null) {
+    const reopened = mapSet(draft, exerciseId, setId, (set) => ({
+      ...set,
+      completedAt: null,
+    }));
     return {
-      draft: mapSet(draft, exerciseId, setId, (set) => ({
-        ...set,
-        completedAt: null,
-      })),
+      draft:
+        reopened.rest?.setId === setId ? { ...reopened, rest: null } : reopened,
       done: true,
     };
   }
   const index = exercise.sets.findIndex((item) => item.id === setId);
-  const previous = exercise.sets[index - 1] ?? null;
   const filled = { ...target };
   for (const rule of exercise.fields) {
     const key = FIELD_KEYS[rule.id];
     if (filled[key].trim().length === 0) {
-      filled[key] = suggestedValue(previous, key);
+      filled[key] = placeholderValue(exercise, index, key, units);
     }
   }
   if (!isFilled(exercise.fields, filled)) {
     return { draft, done: false };
   }
+  const completed = mapSet(draft, exerciseId, setId, () => ({
+    ...filled,
+    completedAt: now.toISOString(),
+  }));
+  const rest = exercise.restSeconds ?? 0;
   return {
-    draft: mapSet(draft, exerciseId, setId, () => ({
-      ...filled,
-      completedAt: now.toISOString(),
-    })),
+    draft:
+      rest > 0
+        ? startRest(completed, rest, now, { exerciseId, setId })
+        : completed,
     done: true,
   };
 }
@@ -327,6 +452,7 @@ export interface WorkoutPayload {
   exercises: {
     exerciseId: string;
     notes: string | null;
+    restSeconds: number | null;
     sets: WorkoutSetPayload[];
   }[];
 }
@@ -349,6 +475,7 @@ export function toWorkoutPayload(
     exercises: draft.exercises.map((exercise) => ({
       exerciseId: exercise.exerciseId,
       notes: orNull(exercise.notes),
+      restSeconds: exercise.restSeconds ?? null,
       sets: exercise.sets.map((set) => {
         const weight = parseDecimal(set.weight);
         const distance = parseDecimal(set.distance);

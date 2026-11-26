@@ -3,6 +3,8 @@ import {
   acceptsInput,
   addExercises,
   addSet,
+  applyPrevious,
+  applyPreviousToSet,
   completedSetCount,
   createDraft,
   draftSchema,
@@ -311,6 +313,7 @@ describe('toWorkoutPayload', () => {
         {
           exerciseId: 'ex-A',
           notes: 'slow',
+          restSeconds: null,
           sets: [
             {
               kind: 'working',
@@ -360,5 +363,156 @@ describe('acceptsInput', () => {
     ['weight', '1234567890', false],
   ] as const)('%s "%s" -> %s', (key, text, expected) => {
     expect(acceptsInput(key, text)).toBe(expected);
+  });
+});
+
+describe('last time hint', () => {
+  const history = {
+    exerciseId: 'ex-A',
+    workoutId: 'w-0',
+    startedAt: '2026-11-20T10:00:00.000Z',
+    localDate: '2026-11-20',
+    restSeconds: 90,
+    sets: [
+      {
+        kind: 'warmup' as const,
+        weightKg: 40,
+        reps: 12,
+        durationS: null,
+        distanceM: null,
+      },
+      {
+        kind: 'working' as const,
+        weightKg: 80,
+        reps: 10,
+        durationS: null,
+        distanceM: null,
+      },
+      {
+        kind: 'working' as const,
+        weightKg: 82.5,
+        reps: 8,
+        durationS: null,
+        distanceM: null,
+      },
+    ],
+  };
+
+  it('creates as many empty sets of the same kinds as last time', () => {
+    const base = draftWith('A');
+    const result = applyPrevious(base, ['ex-A'], [history], counter());
+    const exercise = result.exercises[0];
+    expect(exercise?.sets.map((item) => item.kind)).toEqual([
+      'warmup',
+      'working',
+      'working',
+    ]);
+    expect(exercise?.sets.every((item) => item.weight === '')).toBe(true);
+    expect(exercise?.previous?.localDate).toBe('2026-11-20');
+    expect(exercise?.restSeconds).toBe(90);
+    expect(draftSchema.safeParse(result).success).toBe(true);
+  });
+
+  it('leaves the sets alone when the user already typed something', () => {
+    const base = draftWith('A');
+    const exercise = base.exercises[0];
+    const typed = updateSet(
+      base,
+      exercise?.id ?? '',
+      exercise?.sets[0]?.id ?? '',
+      {
+        weight: '55',
+      },
+    );
+    const result = applyPrevious(typed, ['ex-A'], [history], counter());
+    expect(result.exercises[0]?.sets).toHaveLength(1);
+    expect(result.exercises[0]?.sets[0]?.weight).toBe('55');
+    expect(result.exercises[0]?.previous).not.toBeNull();
+  });
+
+  it('keeps a rest time the user already chose', () => {
+    const base = draftWith('A');
+    const chosen = {
+      ...base,
+      exercises: base.exercises.map((item) => ({ ...item, restSeconds: 45 })),
+    };
+    const result = applyPrevious(chosen, ['ex-A'], [history], counter());
+    expect(result.exercises[0]?.restSeconds).toBe(45);
+  });
+
+  it('marks exercises without history so they are not asked again', () => {
+    const base = draftWith('A', 'B');
+    const result = applyPrevious(base, ['ex-A', 'ex-B'], [history], counter());
+    expect(result.exercises[1]?.previous).toBeNull();
+    expect(result.exercises[1]?.sets).toHaveLength(1);
+  });
+
+  it('does not overwrite what was loaded earlier or touch exercises not asked about', () => {
+    const base = draftWith('A', 'B');
+    const once = applyPrevious(base, ['ex-A'], [history], counter());
+    const twice = applyPrevious(once, ['ex-A', 'ex-B'], [], counter());
+    expect(twice.exercises[0]?.previous?.workoutId).toBe('w-0');
+    expect(twice.exercises[1]?.previous).toBeNull();
+    expect(
+      applyPrevious(base, ['ex-A'], [history], counter()).exercises[1]
+        ?.previous,
+    ).toBeUndefined();
+  });
+
+  it('puts last time values into an empty set when it is completed', () => {
+    const base = applyPrevious(draftWith('A'), ['ex-A'], [history], counter());
+    const exercise = base.exercises[1 - 1];
+    const second = exercise?.sets[1];
+    const result = toggleSet(base, exercise?.id ?? '', second?.id ?? '', now);
+    expect(result.done).toBe(true);
+    expect(result.draft.exercises[0]?.sets[1]).toMatchObject({
+      weight: '80',
+      reps: '10',
+    });
+  });
+
+  it('prefers last time over the previous set of this workout', () => {
+    const base = applyPrevious(draftWith('A'), ['ex-A'], [history], counter());
+    const exercise = base.exercises[0];
+    const first = exercise?.sets[0];
+    let draft = updateSet(base, exercise?.id ?? '', first?.id ?? '', {
+      weight: '50',
+      reps: '12',
+    });
+    draft = toggleSet(draft, exercise?.id ?? '', first?.id ?? '', now).draft;
+    const second = draft.exercises[0]?.sets[1];
+    const result = toggleSet(draft, exercise?.id ?? '', second?.id ?? '', now);
+    expect(result.draft.exercises[0]?.sets[1]).toMatchObject({
+      weight: '80',
+      reps: '10',
+    });
+  });
+
+  it('converts last time values to the user units', () => {
+    const base = applyPrevious(draftWith('A'), ['ex-A'], [history], counter());
+    const exercise = base.exercises[0];
+    const result = applyPreviousToSet(
+      base,
+      exercise?.id ?? '',
+      exercise?.sets[1]?.id ?? '',
+      'lb',
+    );
+    expect(result.exercises[0]?.sets[1]).toMatchObject({
+      weight: '176.37',
+      reps: '10',
+    });
+  });
+
+  it('does not overwrite a completed set', () => {
+    const base = applyPrevious(draftWith('A'), ['ex-A'], [history], counter());
+    const exercise = base.exercises[0];
+    const setId = exercise?.sets[1]?.id ?? '';
+    let draft = updateSet(base, exercise?.id ?? '', setId, {
+      weight: '90',
+      reps: '5',
+    });
+    draft = toggleSet(draft, exercise?.id ?? '', setId, now).draft;
+    const result = applyPreviousToSet(draft, exercise?.id ?? '', setId, 'kg');
+    expect(result.exercises[0]?.sets[1]?.weight).toBe('90');
   });
 });

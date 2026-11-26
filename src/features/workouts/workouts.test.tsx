@@ -1,6 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { createMemoryHistory } from '@tanstack/react-router';
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -24,12 +25,14 @@ import {
 } from '@/features/exercises/api/exercises.service';
 import {
   deleteWorkout,
+  fetchPreviousSets,
   fetchWorkout,
   fetchWorkouts,
   saveWorkout,
   type WorkoutDetails,
 } from '@/features/workouts/api/workouts.service';
 import { useDraftStore } from '@/features/workouts/model/draft-store';
+import { playRestSignal } from '@/shared/lib/rest-signal';
 
 vi.mock('@/features/auth/api/auth.service', () => ({
   getSession: vi.fn(() => Promise.resolve({ email: 'ada@example.com' })),
@@ -67,6 +70,14 @@ vi.mock('@/features/workouts/api/workouts.service', async (importOriginal) => ({
   fetchWorkouts: vi.fn(),
   fetchWorkout: vi.fn(),
   deleteWorkout: vi.fn(),
+  fetchPreviousSets: vi.fn(),
+}));
+
+vi.mock('@/shared/lib/rest-signal', () => ({
+  playRestSignal: vi.fn(),
+  unlockRestAudio: vi.fn(),
+  restSoundEnabled: vi.fn(() => true),
+  setRestSoundEnabled: vi.fn(),
 }));
 
 const user: CurrentUser = {
@@ -137,6 +148,7 @@ const saved: WorkoutDetails = {
       type: 'weight_reps',
       custom: false,
       notes: null,
+      restSeconds: null,
       sets: [
         {
           kind: 'working',
@@ -184,6 +196,7 @@ describe('workouts', () => {
       nextOffset: null,
     });
     vi.mocked(deleteWorkout).mockResolvedValue();
+    vi.mocked(fetchPreviousSets).mockResolvedValue({ items: [] });
   });
 
   afterEach(() => {
@@ -270,7 +283,7 @@ describe('workouts', () => {
     useDraftStore
       .getState()
       .changeSet(exercise?.id ?? '', setId, { weight: '50', reps: '5' });
-    useDraftStore.getState().toggleSet(exercise?.id ?? '', setId);
+    useDraftStore.getState().toggleSet(exercise?.id ?? '', setId, 'kg');
 
     history.push('/workout/finish');
     fireEvent.click(await screen.findByRole('button', { name: 'Save' }));
@@ -391,5 +404,163 @@ describe('workouts', () => {
     expect(
       screen.queryByRole('link', { name: /Workout in progress/ }),
     ).toBeNull();
+  });
+
+  async function startWithBench() {
+    useDraftStore.getState().start(user.id);
+    useDraftStore.getState().addExercises([
+      {
+        exerciseId: bench.id,
+        name: bench.name,
+        image: null,
+        type: 'weight_reps',
+        custom: false,
+        fields: [
+          { id: 'weightKg', requirement: 'required', min: 0, max: 1000 },
+          { id: 'reps', requirement: 'required', min: 0, max: 1000 },
+        ],
+      },
+    ]);
+    return renderAt('/workout');
+  }
+
+  it('shows what was lifted last time and copies it on tap', async () => {
+    vi.mocked(fetchPreviousSets).mockResolvedValue({
+      items: [
+        {
+          exerciseId: bench.id,
+          workoutId: 'w-0',
+          startedAt: '2026-11-20T10:00:00.000Z',
+          localDate: '2026-11-20',
+          restSeconds: null,
+          sets: [
+            {
+              kind: 'working',
+              weightKg: 60,
+              reps: 12,
+              durationS: null,
+              distanceM: null,
+            },
+            {
+              kind: 'working',
+              weightKg: 80,
+              reps: 10,
+              durationS: null,
+              distanceM: null,
+            },
+          ],
+        },
+      ],
+    });
+    await startWithBench();
+
+    expect(await screen.findByText('60 kg × 12')).toBeTruthy();
+    expect(screen.getByText('80 kg × 10')).toBeTruthy();
+    expect(fetchPreviousSets).toHaveBeenCalledWith([bench.id]);
+    expect(screen.getAllByRole('textbox', { name: 'KG' })).toHaveLength(2);
+
+    fireEvent.click(screen.getByRole('button', { name: /last time.*set 2/ }));
+    const [, secondWeight] = screen.getAllByRole('textbox', { name: 'KG' });
+    const [, secondReps] = screen.getAllByRole('textbox', { name: 'REPS' });
+    expect((secondWeight as HTMLInputElement).value).toBe('80');
+    expect((secondReps as HTMLInputElement).value).toBe('10');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mark set 1 as done' }));
+    const draft = useDraftStore.getState().draft;
+    expect(draft?.exercises[0]?.sets[0]).toMatchObject({
+      weight: '60',
+      reps: '12',
+    });
+  });
+
+  it('shows a dash when there is no history', async () => {
+    await startWithBench();
+
+    expect(await screen.findByText('—')).toBeTruthy();
+    await waitFor(() => {
+      expect(useDraftStore.getState().draft?.exercises[0]?.previous).toBeNull();
+    });
+  });
+
+  it('starts the rest timer after a set and lets you skip it', async () => {
+    await startWithBench();
+    fireEvent.click(await screen.findByRole('button', { name: 'Rest: off' }));
+    const sheet = await screen.findByRole('dialog');
+    fireEvent.click(within(sheet).getByText('1:30'));
+    expect(
+      await screen.findByRole('button', { name: 'Rest: 1:30' }),
+    ).toBeTruthy();
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'KG' }), {
+      target: { value: '60' },
+    });
+    fireEvent.change(screen.getByRole('textbox', { name: 'REPS' }), {
+      target: { value: '8' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Mark set 1 as done' }));
+
+    const panel = await screen.findByRole('timer');
+    expect(within(panel).getByText('1:30')).toBeTruthy();
+
+    fireEvent.click(within(panel).getByRole('button', { name: /Skip/ }));
+    await waitFor(() => {
+      expect(screen.queryByRole('timer')).toBeNull();
+    });
+  });
+
+  it('signals when the rest time is over', async () => {
+    await startWithBench();
+    await screen.findByRole('button', { name: 'Rest: off' });
+
+    act(() => {
+      useDraftStore.setState((state) =>
+        state.draft
+          ? {
+              draft: {
+                ...state.draft,
+                rest: {
+                  endsAt: Date.now() - 500,
+                  durationS: 60,
+                  exerciseId: null,
+                  setId: null,
+                },
+              },
+            }
+          : state,
+      );
+    });
+
+    await waitFor(() => {
+      expect(playRestSignal).toHaveBeenCalledTimes(1);
+    });
+    expect(useDraftStore.getState().draft?.rest).toBeNull();
+  });
+
+  it('stays quiet when the rest ended long ago', async () => {
+    await startWithBench();
+    await screen.findByRole('button', { name: 'Rest: off' });
+
+    act(() => {
+      useDraftStore.setState((state) =>
+        state.draft
+          ? {
+              draft: {
+                ...state.draft,
+                rest: {
+                  endsAt: Date.now() - 60_000,
+                  durationS: 60,
+                  exerciseId: null,
+                  setId: null,
+                },
+              },
+            }
+          : state,
+      );
+    });
+
+    await waitFor(() => {
+      expect(useDraftStore.getState().draft?.rest).toBeNull();
+    });
+    expect(playRestSignal).not.toHaveBeenCalled();
   });
 });

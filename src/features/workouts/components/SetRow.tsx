@@ -4,7 +4,7 @@ import type { Units } from '@/features/auth/api/current-user.service';
 import {
   acceptsInput,
   FIELD_KEYS,
-  suggestedValue,
+  placeholderValue,
   type DraftExercise,
   type DraftSet,
   type SetValueKey,
@@ -13,7 +13,8 @@ import {
   columnLabelKey,
   columnTemplate,
 } from '@/features/workouts/model/columns';
-import { setMark } from '@/features/workouts/model/display';
+import { setLabel, setMark } from '@/features/workouts/model/display';
+import { matchPrevious } from '@/features/workouts/model/previous';
 import { cn } from '@/shared/lib/utils';
 
 const INPUT_MODES: Readonly<
@@ -34,6 +35,7 @@ function SetRow({
   onKind,
   onChange,
   onToggle,
+  onUsePrevious,
 }: {
   exercise: DraftExercise;
   units: Units;
@@ -43,9 +45,11 @@ function SetRow({
   onKind: () => void;
   onChange: (key: SetValueKey, value: string) => void;
   onToggle: () => void;
+  onUsePrevious: () => void;
 }) {
-  const { t } = useTranslation();
-  const previous = exercise.sets[index - 1] ?? null;
+  const { t, i18n } = useTranslation();
+  const lastTime =
+    matchPrevious(exercise.sets, exercise.previous)[index] ?? null;
   const done = set.completedAt !== null;
   const mark = setMark(set.kind, number, t);
 
@@ -70,6 +74,20 @@ function SetRow({
       >
         {mark}
       </button>
+      <button
+        type="button"
+        disabled={lastTime === null || done}
+        aria-label={t('workout.col.previousSet', { number: index + 1 })}
+        onClick={onUsePrevious}
+        className="flex h-10 min-w-0 items-center justify-center truncate rounded-lg px-1 text-center text-xs text-muted-foreground outline-none enabled:active:bg-secondary focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      >
+        {lastTime === null
+          ? '—'
+          : setLabel(
+              { ...lastTime, completedAt: null },
+              { units, language: i18n.language, t },
+            )}
+      </button>
       {exercise.fields.map((rule) => {
         const key = FIELD_KEYS[rule.id];
         return (
@@ -80,7 +98,7 @@ function SetRow({
             autoComplete="off"
             enterKeyHint="next"
             aria-label={t(columnLabelKey(rule, units))}
-            placeholder={suggestedValue(previous, key)}
+            placeholder={placeholderValue(exercise, index, key, units)}
             onChange={(event) => {
               const next = event.target.value;
               if (acceptsInput(key, next)) {

@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Ellipsis, FilePlus, Plus } from 'lucide-react';
+import { Ellipsis, FilePlus, Plus, Timer } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Units } from '@/features/auth/api/current-user.service';
@@ -10,6 +10,7 @@ import {
   columnTemplate,
 } from '@/features/workouts/model/columns';
 import { workingNumbers } from '@/features/workouts/model/display';
+import { formatClock } from '@/features/workouts/model/format';
 import type {
   DraftExercise,
   SetKind,
@@ -24,19 +25,23 @@ function ExerciseCard({
   units,
   onMenu,
   onNotes,
+  onRest,
   onAddSet,
   onSetKind,
   onChangeSet,
   onToggleSet,
+  onUsePrevious,
 }: {
   exercise: DraftExercise;
   units: Units;
   onMenu: () => void;
   onNotes: (notes: string) => void;
+  onRest: () => void;
   onAddSet: () => void;
   onSetKind: (setId: string, current: SetKind) => void;
   onChangeSet: (setId: string, key: SetValueKey, value: string) => void;
   onToggleSet: (setId: string) => boolean;
+  onUsePrevious: (setId: string) => void;
 }) {
   const { t } = useTranslation();
   const [notesOpen, setNotesOpen] = useState(exercise.notes.length > 0);
@@ -66,6 +71,34 @@ function ExerciseCard({
         </IconButton>
       </header>
 
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={onRest}
+          className="flex h-10 items-center gap-2 rounded-lg bg-secondary px-3 text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        >
+          <Timer className="size-4" aria-hidden />
+          {t('workout.rest.button', {
+            value:
+              exercise.restSeconds && exercise.restSeconds > 0
+                ? formatClock(exercise.restSeconds)
+                : t('workout.rest.offShort'),
+          })}
+        </button>
+        {notesOpen ? null : (
+          <button
+            type="button"
+            onClick={() => {
+              setNotesOpen(true);
+            }}
+            className="flex h-10 items-center gap-2 rounded-lg bg-secondary px-3 text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          >
+            <FilePlus className="size-4" aria-hidden />
+            {t('workout.note')}
+          </button>
+        )}
+      </div>
+
       {notesOpen ? (
         <Textarea
           value={exercise.notes}
@@ -77,18 +110,7 @@ function ExerciseCard({
             onNotes(event.target.value);
           }}
         />
-      ) : (
-        <button
-          type="button"
-          onClick={() => {
-            setNotesOpen(true);
-          }}
-          className="flex h-10 items-center gap-2 self-start rounded-lg bg-secondary px-3 text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-        >
-          <FilePlus className="size-4" aria-hidden />
-          {t('workout.note')}
-        </button>
-      )}
+      ) : null}
 
       <div
         className="grid gap-2 px-0 text-xs font-medium text-muted-foreground"
@@ -96,6 +118,7 @@ function ExerciseCard({
         aria-hidden
       >
         <span className="text-center">{t('workout.col.set')}</span>
+        <span className="text-center">{t('workout.col.previous')}</span>
         {exercise.fields.map((rule) => (
           <span key={rule.id} className="text-center">
             {t(columnLabelKey(rule, units))}
@@ -118,6 +141,9 @@ function ExerciseCard({
             }}
             onChange={(key, value) => {
               onChangeSet(set.id, key, value);
+            }}
+            onUsePrevious={() => {
+              onUsePrevious(set.id);
             }}
             onToggle={() => {
               if (!onToggleSet(set.id)) {

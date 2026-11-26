@@ -215,7 +215,9 @@
       "signedLb": "+LB",
       "reps": "REPS",
       "durationS": "TIME",
-      "distanceM": "KM"
+      "distanceM": "KM",
+      "previous": "PREV",
+      "previousSet": "Use last time's values for set {{number}}"
     },
     "note": "Note",
     "notePlaceholder": "Note for this exercise",
@@ -278,6 +280,18 @@
     "warmupMark": "W",
     "dropMark": "D",
     "failureMark": "F",
-    "repsShort": "reps"
+    "repsShort": "reps",
+    "rest": {
+      "title": "Rest",
+      "timer": "Rest timer",
+      "button": "Rest: {{value}}",
+      "off": "Off",
+      "offShort": "off",
+      "skip": "Skip",
+      "sound": "Timer sound",
+      "finished": "Rest is over",
+      "finishedAgo": "Rest ended {{time}} ago",
+      "exerciseTitle": "Rest: {{name}}"
+    }
   }
 }

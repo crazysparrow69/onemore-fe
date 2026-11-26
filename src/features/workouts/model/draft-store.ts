@@ -4,6 +4,8 @@ import { z } from 'zod';
 import {
   addExercises,
   addSet,
+  applyPrevious,
+  applyPreviousToSet,
   createDraft,
   draftSchema,
   moveExercise,
@@ -18,6 +20,14 @@ import {
   type SetKind,
   type SetValueKey,
 } from '@/features/workouts/model/draft';
+import type { Units } from '@/features/auth/api/current-user.service';
+import type { PreviousExercise } from '@/features/workouts/model/previous';
+import {
+  adjustRest,
+  setRestSeconds,
+  skipRest,
+  startRest,
+} from '@/features/workouts/model/rest';
 import { uuidV7 } from '@/shared/lib/uuid';
 
 export const DRAFT_STORAGE_KEY = 'onemore.workout-draft';
@@ -45,7 +55,16 @@ export interface DraftState {
     setId: string,
     patch: Partial<Record<SetValueKey, string>> & { kind?: SetKind },
   ) => void;
-  toggleSet: (exerciseId: string, setId: string) => boolean;
+  toggleSet: (exerciseId: string, setId: string, units: Units) => boolean;
+  applyPrevious: (
+    requested: readonly string[],
+    items: readonly (PreviousExercise & { exerciseId: string })[],
+  ) => void;
+  copyPreviousToSet: (exerciseId: string, setId: string, units: Units) => void;
+  setRestSeconds: (exerciseId: string, seconds: number | null) => void;
+  startRest: (seconds: number) => void;
+  adjustRest: (deltaS: number) => void;
+  skipRest: () => void;
   setMeta: (meta: Partial<Pick<Draft, 'name' | 'notes' | 'startedAt'>>) => void;
 }
 
@@ -89,14 +108,38 @@ export const useDraftStore = create<DraftState>()(
         changeSet: (exerciseId, setId, patch) => {
           edit((draft) => updateSet(draft, exerciseId, setId, patch));
         },
-        toggleSet: (exerciseId, setId) => {
+        toggleSet: (exerciseId, setId, units) => {
           const current = get().draft;
           if (!current) {
             return false;
           }
-          const result = toggleSet(current, exerciseId, setId, new Date());
+          const result = toggleSet(
+            current,
+            exerciseId,
+            setId,
+            new Date(),
+            units,
+          );
           set({ draft: result.draft });
           return result.done;
+        },
+        applyPrevious: (requested, items) => {
+          edit((draft) => applyPrevious(draft, requested, items, newId));
+        },
+        copyPreviousToSet: (exerciseId, setId, units) => {
+          edit((draft) => applyPreviousToSet(draft, exerciseId, setId, units));
+        },
+        setRestSeconds: (exerciseId, seconds) => {
+          edit((draft) => setRestSeconds(draft, exerciseId, seconds));
+        },
+        startRest: (seconds) => {
+          edit((draft) => startRest(draft, seconds, new Date()));
+        },
+        adjustRest: (deltaS) => {
+          edit((draft) => adjustRest(draft, deltaS, new Date()));
+        },
+        skipRest: () => {
+          edit((draft) => skipRest(draft));
         },
         setMeta: (meta) => {
           edit((draft) => setMeta(draft, meta));

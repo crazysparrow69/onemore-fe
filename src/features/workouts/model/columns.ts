@@ -2,7 +2,7 @@ import type { Units } from '@/features/auth/api/current-user.service';
 import type { FieldRule } from '@/features/workouts/model/draft';
 
 export function columnTemplate(fields: readonly FieldRule[]): string {
-  return `2.75rem repeat(${String(fields.length)}, minmax(0, 1fr)) 2.75rem`;
+  return `2.75rem minmax(0, 1.4fr) repeat(${String(fields.length)}, minmax(0, 1fr)) 2.75rem`;
 }
 
 export function columnLabelKey(

@@ -1,6 +1,7 @@
 import { Outlet } from '@tanstack/react-router';
 import { TabBar } from '@/app/layout/TabBar';
 import { UpdatePrompt } from '@/app/pwa/UpdatePrompt';
+import { RestEffects } from '@/features/workouts/components/RestEffects';
 import { ActiveWorkoutBar } from '@/features/workouts/components/ActiveWorkoutBar';
 import { Toaster } from '@/shared/ui/toaster';
 
@@ -12,6 +13,7 @@ export function RootLayout() {
         <ActiveWorkoutBar />
         <TabBar />
       </div>
+      <RestEffects />
       <UpdatePrompt />
       <Toaster />
     </div>

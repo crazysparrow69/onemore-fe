@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { api } from '@/features/auth/api/http';
 import type { WorkoutPayload } from '@/features/workouts/model/draft';
+import { previousExerciseSchema } from '@/features/workouts/model/previous';
 import type { ApiClient } from '@/shared/api/client';
 import { ApiError } from '@/shared/api/error';
 
@@ -30,6 +31,7 @@ const exerciseSchema = z.object({
   type: z.string(),
   custom: z.boolean(),
   notes: z.string().nullable(),
+  restSeconds: z.number().nullable(),
   sets: z.array(setSchema),
 });
 
@@ -67,6 +69,11 @@ const listSchema = z.object({
   nextOffset: z.number().nullable(),
 });
 
+const previousSetsSchema = z.object({
+  items: z.array(previousExerciseSchema.extend({ exerciseId: z.string() })),
+});
+
+export type PreviousSetsResponse = z.infer<typeof previousSetsSchema>;
 export type WorkoutTotals = z.infer<typeof totalsSchema>;
 export type WorkoutSet = z.infer<typeof setSchema>;
 export type WorkoutExercise = z.infer<typeof exerciseSchema>;
@@ -116,4 +123,16 @@ export async function deleteWorkout(
   client: ApiClient = api,
 ): Promise<void> {
   await client.delete(`/workouts/${encodeURIComponent(id)}`);
+}
+
+export async function fetchPreviousSets(
+  exerciseIds: readonly string[],
+  client: ApiClient = api,
+): Promise<PreviousSetsResponse> {
+  return parse(
+    previousSetsSchema,
+    await client.get('/workouts/previous-sets', {
+      exerciseIds: exerciseIds.join(','),
+    }),
+  );
 }
