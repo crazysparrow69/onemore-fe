@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { UNITS } from '@/entities/user/api/current-user.service';
 import { LANGUAGES } from '@/shared/i18n/language';
 
 export const NAME_MAX_LENGTH = 100;
@@ -17,7 +18,7 @@ export const profileSchema = z.object({
 
 export const settingsSchema = z.object({
   language: z.enum(LANGUAGES),
-  units: z.enum(['kg', 'lb']),
+  units: z.enum(UNITS),
   timeZone: z.string().min(1, { error: 'validation.required' }),
 });
 

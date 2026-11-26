@@ -26,7 +26,7 @@ import {
   applyPrevious,
   removeExercise as removeDraftExercise,
   type FieldRule,
-} from '@/features/workouts/model/draft';
+} from '@/entities/training/model/draft';
 
 const fields: FieldRule[] = [
   { id: 'weightKg', requirement: 'required', min: 0, max: 1000 },

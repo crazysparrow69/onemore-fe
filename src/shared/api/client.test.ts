@@ -8,7 +8,7 @@ import {
 import { describe, expect, it, vi } from 'vitest';
 import { createApiClient } from '@/shared/api/client';
 import { ApiError } from '@/shared/api/error';
-import { fetchCurrentUser } from '@/features/auth/api/current-user.service';
+import { fetchCurrentUser } from '@/entities/user/api/current-user.service';
 
 function response(
   config: InternalAxiosRequestConfig,

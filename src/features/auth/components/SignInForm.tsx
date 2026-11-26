@@ -7,9 +7,9 @@ import { toast } from '@/shared/lib/toast';
 import { Button } from '@/shared/ui/button';
 import { Text } from '@/shared/ui/text';
 import { TextField } from '@/shared/ui/text-field';
-import { useSignIn } from '@/features/auth/api/use-auth';
+import { useSignIn } from '@/entities/user/api/use-auth';
 import { AuthScreen, OrDivider } from '@/features/auth/components/AuthScreen';
-import { fieldError } from '@/features/auth/components/field-error';
+import { fieldError } from '@/shared/lib/field-error';
 import { GoogleSignInButton } from '@/features/auth/components/GoogleSignInButton';
 import { signInSchema, type SignInValues } from '@/features/auth/model/schema';
 

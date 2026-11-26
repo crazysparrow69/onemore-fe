@@ -1,9 +1,10 @@
 import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { useCurrentUser } from '@/features/auth/api/use-auth';
-import { useWorkoutList } from '@/features/workouts/api/use-workouts';
-import { WorkoutCard } from '@/features/workouts/components/WorkoutCard';
+import { useCurrentUser } from '@/entities/user/api/use-auth';
+import { useWorkoutList } from '@/entities/training/api/use-workouts';
+import { WorkoutCard } from '@/entities/training/components/WorkoutCard';
 import { Button } from '@/shared/ui/button';
+import { ErrorState } from '@/shared/ui/error-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
 
@@ -31,18 +32,11 @@ export function HomePage() {
         ) : null}
 
         {list.isError ? (
-          <div className="flex flex-col items-start gap-3">
-            <Text tone="danger">{t('errors.generic.description')}</Text>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                void list.refetch();
-              }}
-            >
-              {t('common.retry')}
-            </Button>
-          </div>
+          <ErrorState
+            onRetry={() => {
+              void list.refetch();
+            }}
+          />
         ) : null}
 
         {last ? <WorkoutCard workout={last} /> : null}

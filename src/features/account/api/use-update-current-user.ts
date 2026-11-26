@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { authKeys } from '@/features/auth/api/auth.keys';
+import { authKeys } from '@/entities/user/api/auth.keys';
 import {
   patchCurrentUser,
   type UserPatch,
-} from '@/features/auth/api/current-user.service';
+} from '@/entities/user/api/current-user.service';
 
 export function useUpdateCurrentUser() {
   const queryClient = useQueryClient();

@@ -2,7 +2,7 @@ import { getRouteApi, Link, useRouter } from '@tanstack/react-router';
 import { Dumbbell, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useCurrentUser } from '@/features/auth/api/use-auth';
+import { useCurrentUser } from '@/entities/user/api/use-auth';
 import {
   useSaveTemplate,
   useTemplate,
@@ -22,51 +22,33 @@ import {
   useTemplateEditor,
 } from '@/features/templates/model/editor-store';
 import { useFieldsOf } from '@/features/templates/model/use-launch';
-import { ExerciseMenuSheet } from '@/features/workouts/components/ExerciseMenuSheet';
-import { RestPickerSheet } from '@/features/workouts/components/RestPickerSheet';
-import { SetKindSheet } from '@/features/workouts/components/SetKindSheet';
-import { MAX_EXERCISES } from '@/features/workouts/model/draft';
-import { isApiError } from '@/shared/api/error';
+import { ExerciseMenuSheet } from '@/entities/training/components/ExerciseMenuSheet';
+import { RestPickerSheet } from '@/entities/training/components/RestPickerSheet';
+import { SetKindSheet } from '@/entities/training/components/SetKindSheet';
+import { MAX_EXERCISES } from '@/entities/training/model/draft';
+import { apiErrorKey } from '@/shared/api/error';
 import { toast } from '@/shared/lib/toast';
 import { uuidV7 } from '@/shared/lib/uuid';
-import { BottomSheet } from '@/shared/ui/bottom-sheet';
+import { ConfirmSheet } from '@/shared/ui/confirm-sheet';
 import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
 import { TextField } from '@/shared/ui/text-field';
+import { newId } from '@/shared/lib/uuid';
 
 const editRoute = getRouteApi('/programs/$programId/edit');
 
-type ErrorKey =
-  | 'templates.errors.limit'
-  | 'templates.errors.values'
-  | 'templates.errors.exerciseChanged'
-  | 'templates.errors.gone'
-  | 'templates.errors.network'
-  | 'templates.errors.generic';
+const ERROR_KEYS = {
+  TEMPLATE_LIMIT_REACHED: 'templates.errors.limit',
+  SET_VALUES_INVALID: 'templates.errors.values',
+  VALIDATION_FAILED: 'templates.errors.values',
+  EXERCISE_CHANGED: 'templates.errors.exerciseChanged',
+  TEMPLATE_NOT_FOUND: 'templates.errors.gone',
+  NETWORK_ERROR: 'templates.errors.network',
+} as const;
 
-function errorKey(error: unknown): ErrorKey {
-  if (!isApiError(error)) {
-    return 'templates.errors.generic';
-  }
-  switch (error.code) {
-    case 'TEMPLATE_LIMIT_REACHED':
-      return 'templates.errors.limit';
-    case 'SET_VALUES_INVALID':
-    case 'VALIDATION_FAILED':
-      return 'templates.errors.values';
-    case 'EXERCISE_CHANGED':
-      return 'templates.errors.exerciseChanged';
-    case 'TEMPLATE_NOT_FOUND':
-      return 'templates.errors.gone';
-    case 'NETWORK_ERROR':
-      return 'templates.errors.network';
-    default:
-      return 'templates.errors.generic';
-  }
-}
-
-const newId = (): string => crypto.randomUUID();
+const errorKey = (error: unknown) =>
+  apiErrorKey(error, ERROR_KEYS, 'templates.errors.generic');
 
 function EditorForm({ editor }: { editor: Editor }) {
   const { t } = useTranslation();
@@ -303,39 +285,19 @@ function EditorForm({ editor }: { editor: Editor }) {
         }}
       />
 
-      <BottomSheet
-        compact
+      <ConfirmSheet
         open={confirmingDiscard}
         onOpenChange={setConfirmingDiscard}
         title={t('templates.discardTitle')}
-        footer={
-          <>
-            <Button
-              type="button"
-              variant="secondary"
-              className="min-w-0 flex-1 px-3 text-sm"
-              onClick={() => {
-                setConfirmingDiscard(false);
-              }}
-            >
-              {t('templates.keepEditing')}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              className="min-w-0 flex-1 px-3 text-sm"
-              onClick={() => {
-                setConfirmingDiscard(false);
-                leave();
-              }}
-            >
-              {t('templates.discardConfirm')}
-            </Button>
-          </>
-        }
+        cancelLabel={t('templates.keepEditing')}
+        confirmLabel={t('templates.discardConfirm')}
+        onConfirm={() => {
+          setConfirmingDiscard(false);
+          leave();
+        }}
       >
         <Text tone="muted">{t('templates.discardHint')}</Text>
-      </BottomSheet>
+      </ConfirmSheet>
     </main>
   );
 }

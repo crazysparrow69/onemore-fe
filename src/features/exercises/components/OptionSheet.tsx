@@ -3,7 +3,7 @@ import { FilterCard } from '@/features/exercises/components/FilterCard';
 import { FilterThumb } from '@/features/exercises/components/FilterThumb';
 import { cn } from '@/shared/lib/utils';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
-import { Button } from '@/shared/ui/button';
+import { SheetActions } from '@/shared/ui/sheet-actions';
 
 export interface OptionSection {
   id: string;
@@ -64,27 +64,21 @@ function OptionSheet({
       title={title}
       footer={
         multiple ? (
-          <>
-            <Button
-              type="button"
-              variant="secondary"
-              className="shrink-0 px-3 text-sm"
-              onClick={() => {
+          <SheetActions
+            auxiliary
+            secondary={{
+              label: clearLabel,
+              onClick: () => {
                 setDraft([]);
-              }}
-            >
-              {clearLabel}
-            </Button>
-            <Button
-              type="button"
-              className="min-w-0 flex-1 px-3 text-sm"
-              onClick={() => {
+              },
+            }}
+            primary={{
+              label: doneLabel,
+              onClick: () => {
                 onApply(draft);
-              }}
-            >
-              {doneLabel}
-            </Button>
-          </>
+              },
+            }}
+          />
         ) : undefined
       }
     >

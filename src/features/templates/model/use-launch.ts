@@ -1,7 +1,7 @@
 import { useRouter } from '@tanstack/react-router';
 import { useCallback } from 'react';
-import { useCurrentUser } from '@/features/auth/api/use-auth';
-import { useExerciseDictionaries } from '@/features/exercises/api/use-exercises';
+import { useCurrentUser } from '@/entities/user/api/use-auth';
+import { useExerciseDictionaries } from '@/entities/exercise/api/use-exercises';
 import type { Template } from '@/features/templates/api/templates.service';
 import {
   createEditor,
@@ -16,11 +16,10 @@ import { copyName } from '@/features/templates/model/summary';
 import {
   useDraftStore,
   useWorkoutDraft,
-} from '@/features/workouts/model/draft-store';
-import type { FieldRule } from '@/features/workouts/model/draft';
+} from '@/entities/training/model/draft-store';
+import type { FieldRule } from '@/entities/training/model/draft';
 import { uuidV7 } from '@/shared/lib/uuid';
-
-const newId = (): string => crypto.randomUUID();
+import { newId } from '@/shared/lib/uuid';
 
 export function useFieldsOf(): ((type: string) => FieldRule[]) | null {
   const dictionaries = useExerciseDictionaries();

@@ -9,6 +9,7 @@ import { TemplateCard } from '@/features/templates/components/TemplateCard';
 import { TemplateMenu } from '@/features/templates/components/TemplateMenu';
 import { useEditorLaunch } from '@/features/templates/model/use-launch';
 import { Button } from '@/shared/ui/button';
+import { ErrorState } from '@/shared/ui/error-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
 
@@ -46,18 +47,13 @@ function ProgramsSection() {
       ) : null}
 
       {templates.isError ? (
-        <div className="flex flex-col items-start gap-3 rounded-xl bg-card p-4">
-          <Text tone="danger">{t('templates.loadError')}</Text>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => {
-              void templates.refetch();
-            }}
-          >
-            {t('common.retry')}
-          </Button>
-        </div>
+        <ErrorState
+          className="rounded-xl bg-card p-4"
+          message={t('templates.loadError')}
+          onRetry={() => {
+            void templates.refetch();
+          }}
+        />
       ) : null}
 
       {items?.length === 0 ? (

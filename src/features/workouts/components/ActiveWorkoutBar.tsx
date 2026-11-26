@@ -2,12 +2,12 @@ import { skipToken, useQuery } from '@tanstack/react-query';
 import { Link, useRouterState } from '@tanstack/react-router';
 import { ChevronUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { authKeys } from '@/features/auth/api/auth.keys';
-import type { CurrentUser } from '@/features/auth/api/current-user.service';
-import { useWorkoutDraft } from '@/features/workouts/model/draft-store';
-import { formatClock } from '@/features/workouts/model/format';
-import { restLeftSeconds } from '@/features/workouts/model/rest';
-import { useNow } from '@/features/workouts/model/use-now';
+import { authKeys } from '@/entities/user/api/auth.keys';
+import type { CurrentUser } from '@/entities/user/api/current-user.service';
+import { useWorkoutDraft } from '@/entities/training/model/draft-store';
+import { formatClock } from '@/entities/training/model/format';
+import { restLeftSeconds } from '@/entities/training/model/rest';
+import { useNow } from '@/entities/training/model/use-now';
 
 const HIDDEN_PREFIXES = ['/workout', '/sign-in', '/sign-up', '/auth'] as const;
 

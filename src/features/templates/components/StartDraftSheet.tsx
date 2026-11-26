@@ -1,8 +1,7 @@
 import { useRouter } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
 import type { Template } from '@/features/templates/api/templates.service';
-import { BottomSheet } from '@/shared/ui/bottom-sheet';
-import { Button } from '@/shared/ui/button';
+import { ConfirmSheet } from '@/shared/ui/confirm-sheet';
 import { Text } from '@/shared/ui/text';
 
 function StartDraftSheet({
@@ -18,8 +17,7 @@ function StartDraftSheet({
   const router = useRouter();
 
   return (
-    <BottomSheet
-      compact
+    <ConfirmSheet
       open={pending !== null}
       onOpenChange={(open) => {
         if (!open) {
@@ -27,32 +25,16 @@ function StartDraftSheet({
         }
       }}
       title={t('templates.draftTitle')}
-      footer={
-        <>
-          <Button
-            type="button"
-            variant="secondary"
-            className="min-w-0 flex-1 px-3 text-sm"
-            onClick={() => {
-              onClose();
-              void router.navigate({ to: '/workout' });
-            }}
-          >
-            {t('templates.draftContinue')}
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            className="min-w-0 flex-1 px-3 text-sm"
-            onClick={onReplace}
-          >
-            {t('templates.draftReplace')}
-          </Button>
-        </>
-      }
+      cancelLabel={t('templates.draftContinue')}
+      onCancel={() => {
+        onClose();
+        void router.navigate({ to: '/workout' });
+      }}
+      confirmLabel={t('templates.draftReplace')}
+      onConfirm={onReplace}
     >
       <Text tone="muted">{t('templates.draftHint')}</Text>
-    </BottomSheet>
+    </ConfirmSheet>
   );
 }
 

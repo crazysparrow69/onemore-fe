@@ -2,20 +2,20 @@ import { Link } from '@tanstack/react-router';
 import { Ellipsis, FilePlus, Plus, Timer } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Units } from '@/features/auth/api/current-user.service';
-import { ExerciseThumb } from '@/features/exercises/components/ExerciseRow';
+import type { Units } from '@/entities/user/api/current-user.service';
+import { ExerciseThumb } from '@/entities/exercise/components/ExerciseRow';
 import { SetRow } from '@/features/workouts/components/SetRow';
 import {
   columnLabelKey,
   columnTemplate,
-} from '@/features/workouts/model/columns';
-import { workingNumbers } from '@/features/workouts/model/display';
-import { formatClock } from '@/features/workouts/model/format';
+} from '@/entities/training/model/columns';
+import { workingNumbers } from '@/entities/training/model/display';
+import { formatClock } from '@/entities/training/model/format';
 import type {
   DraftExercise,
   SetKind,
   SetValueKey,
-} from '@/features/workouts/model/draft';
+} from '@/entities/training/model/draft';
 import { toast } from '@/shared/lib/toast';
 import { IconButton } from '@/shared/ui/icon-button';
 import { Textarea } from '@/shared/ui/textarea';

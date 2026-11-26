@@ -6,8 +6,8 @@ import {
   useExerciseDictionaries,
   useExerciseLabels,
   useExerciseList,
-} from '@/features/exercises/api/use-exercises';
-import { ExerciseRow } from '@/features/exercises/components/ExerciseRow';
+} from '@/entities/exercise/api/use-exercises';
+import { ExerciseRow } from '@/entities/exercise/components/ExerciseRow';
 import {
   FilterSheet,
   type FilterField,
@@ -18,15 +18,17 @@ import {
   hasFilters,
   joinIds,
   type CatalogSearch,
-} from '@/features/exercises/model/catalog-search';
-import type { ExerciseListItem } from '@/features/exercises/api/exercises.service';
+} from '@/entities/exercise/model/catalog-search';
+import type { ExerciseListItem } from '@/entities/exercise/api/exercises.service';
 import { useDebouncedCallback } from '@/shared/lib/use-debounced-callback';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
+import { ErrorState } from '@/shared/ui/error-state';
 import { LoadMore } from '@/shared/ui/load-more';
 import { SearchField } from '@/shared/ui/search-field';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
+import { useSheet } from '@/shared/lib/use-sheet';
 
 const listRoute = getRouteApi('/exercises');
 const SEARCH_DELAY_MS = 300;
@@ -69,7 +71,7 @@ function ExerciseCatalog({
   const { t } = useTranslation();
   const filters = filtersFromSearch(search);
   const [text, setText] = useState(filters.q);
-  const [sheet, setSheet] = useState<FilterField | null>(null);
+  const sheet = useSheet<FilterField>();
   const dictionaries = useExerciseDictionaries();
   const labels = useExerciseLabels();
   const list = useExerciseList(filters);
@@ -83,7 +85,7 @@ function ExerciseCatalog({
   }, SEARCH_DELAY_MS);
 
   function applyIds(field: FilterField, ids: string[]) {
-    setSheet(null);
+    sheet.close();
     onSearchChange((previous) => ({ ...previous, [field]: joinIds(ids) }));
   }
 
@@ -195,7 +197,7 @@ function ExerciseCatalog({
                 filters[field].length > 0 ? 'text-primary' : '',
               )}
               onClick={() => {
-                setSheet(field);
+                sheet.show(field);
               }}
             >
               <span className="truncate">{filterLabel(field)}</span>
@@ -235,18 +237,12 @@ function ExerciseCatalog({
         {list.isPending ? <RowsSkeleton /> : null}
 
         {list.isError ? (
-          <div className="flex flex-col items-start gap-3 py-4">
-            <Text tone="danger">{t('errors.generic.description')}</Text>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                void list.refetch();
-              }}
-            >
-              {t('common.retry')}
-            </Button>
-          </div>
+          <ErrorState
+            className="py-4"
+            onRetry={() => {
+              void list.refetch();
+            }}
+          />
         ) : null}
 
         {list.data && items.length === 0 ? (
@@ -323,10 +319,7 @@ function ExerciseCatalog({
       ) : null}
 
       <FilterSheet
-        open={sheet === 'equipment'}
-        onOpenChange={(open) => {
-          setSheet(open ? 'equipment' : null);
-        }}
+        {...sheet.bind('equipment')}
         field="equipment"
         title={t('catalog.equipmentTitle')}
         allLabel={t('catalog.allEquipment')}
@@ -337,10 +330,7 @@ function ExerciseCatalog({
         }}
       />
       <FilterSheet
-        open={sheet === 'muscle'}
-        onOpenChange={(open) => {
-          setSheet(open ? 'muscle' : null);
-        }}
+        {...sheet.bind('muscle')}
         field="muscle"
         title={t('catalog.musclesTitle')}
         allLabel={t('catalog.allMuscles')}

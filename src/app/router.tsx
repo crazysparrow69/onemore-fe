@@ -14,7 +14,7 @@ import { RouteErrorPage } from '@/app/routes/RouteErrorPage';
 import {
   validateCatalogSearch,
   validateNewExerciseSearch,
-} from '@/features/exercises/model/catalog-search';
+} from '@/entities/exercise/model/catalog-search';
 import { completeSocialSignIn } from '@/features/auth/model/callback';
 import { requireGuest, requireUser } from '@/features/auth/model/guards';
 
@@ -28,17 +28,25 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
   errorComponent: RouteErrorPage,
 });
 
-const indexRoute = createRoute({
+const authed = {
   getParentRoute: () => rootRoute,
-  path: '/',
   beforeLoad: () => requireUser(),
+};
+
+const guest = {
+  getParentRoute: () => rootRoute,
+  beforeLoad: () => requireGuest(),
+};
+
+const indexRoute = createRoute({
+  ...authed,
+  path: '/',
   component: HomePage,
 });
 
 const profileRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/profile',
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/account'),
     'ProfilePage',
@@ -46,9 +54,8 @@ const profileRoute = createRoute({
 });
 
 const profileEditRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/profile/edit',
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/account'),
     'ProfileEditPage',
@@ -56,9 +63,8 @@ const profileEditRoute = createRoute({
 });
 
 const settingsRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/settings',
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/account'),
     'SettingsPage',
@@ -66,10 +72,9 @@ const settingsRoute = createRoute({
 });
 
 const exercisesRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/exercises',
   validateSearch: validateCatalogSearch,
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/exercises'),
     'ExerciseListPage',
@@ -77,10 +82,9 @@ const exercisesRoute = createRoute({
 });
 
 const exerciseNewRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/exercises/new',
   validateSearch: validateNewExerciseSearch,
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/exercises'),
     'ExerciseCreatePage',
@@ -88,9 +92,8 @@ const exerciseNewRoute = createRoute({
 });
 
 const exerciseEditRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/exercises/$exerciseId/edit',
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/exercises'),
     'ExerciseEditPage',
@@ -98,9 +101,8 @@ const exerciseEditRoute = createRoute({
 });
 
 const exerciseRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/exercises/$exerciseId',
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/exercises'),
     'ExercisePage',
@@ -108,9 +110,8 @@ const exerciseRoute = createRoute({
 });
 
 const workoutRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/workout',
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/workouts'),
     'ActiveWorkoutPage',
@@ -118,10 +119,9 @@ const workoutRoute = createRoute({
 });
 
 const workoutAddRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/workout/add',
   validateSearch: validateCatalogSearch,
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/workouts'),
     'ExercisePickerPage',
@@ -129,9 +129,8 @@ const workoutAddRoute = createRoute({
 });
 
 const workoutFinishRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/workout/finish',
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/workouts'),
     'FinishWorkoutPage',
@@ -139,9 +138,8 @@ const workoutFinishRoute = createRoute({
 });
 
 const trainingRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/training',
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/workouts'),
     'TrainingPage',
@@ -149,9 +147,8 @@ const trainingRoute = createRoute({
 });
 
 const programsNewRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/programs/new',
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/templates'),
     'TemplateNewPage',
@@ -159,10 +156,9 @@ const programsNewRoute = createRoute({
 });
 
 const programsAddRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/programs/add',
   validateSearch: validateCatalogSearch,
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/templates'),
     'TemplateExercisePickerPage',
@@ -170,9 +166,8 @@ const programsAddRoute = createRoute({
 });
 
 const programEditRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/programs/$programId/edit',
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/templates'),
     'TemplateEditPage',
@@ -180,9 +175,8 @@ const programEditRoute = createRoute({
 });
 
 const programRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/programs/$programId',
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/templates'),
     'TemplatePage',
@@ -190,9 +184,8 @@ const programRoute = createRoute({
 });
 
 const workoutDetailsRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...authed,
   path: '/workouts/$workoutId',
-  beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/workouts'),
     'WorkoutDetailsPage',
@@ -200,16 +193,14 @@ const workoutDetailsRoute = createRoute({
 });
 
 const signInRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...guest,
   path: '/sign-in',
-  beforeLoad: () => requireGuest(),
   component: lazyRouteComponent(() => import('@/features/auth'), 'SignInPage'),
 });
 
 const signUpRoute = createRoute({
-  getParentRoute: () => rootRoute,
+  ...guest,
   path: '/sign-up',
-  beforeLoad: () => requireGuest(),
   component: lazyRouteComponent(() => import('@/features/auth'), 'SignUpPage'),
 });
 

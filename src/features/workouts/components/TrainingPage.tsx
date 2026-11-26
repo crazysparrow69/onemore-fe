@@ -1,12 +1,12 @@
 import { useRouter } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useCurrentUser } from '@/features/auth/api/use-auth';
+import { useCurrentUser } from '@/entities/user/api/use-auth';
 import { ProgramsSection } from '@/features/templates/components/ProgramsSection';
 import {
   useDraftStore,
   useWorkoutDraft,
-} from '@/features/workouts/model/draft-store';
+} from '@/entities/training/model/draft-store';
 import { Text } from '@/shared/ui/text';
 
 function TrainingPage() {

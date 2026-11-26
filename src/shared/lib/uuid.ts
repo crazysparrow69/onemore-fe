@@ -18,3 +18,5 @@ export function uuidV7(now: number = Date.now()): string {
     hex.slice(20),
   ].join('-');
 }
+
+export const newId = (): string => crypto.randomUUID();

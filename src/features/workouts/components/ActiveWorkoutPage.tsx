@@ -2,23 +2,23 @@ import { Link, Navigate, useRouter } from '@tanstack/react-router';
 import { ChevronDown, Dumbbell, Plus, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useCurrentUser } from '@/features/auth/api/use-auth';
-import { usePreviousSets } from '@/features/workouts/api/use-workouts';
-import { RestPickerSheet } from '@/features/workouts/components/RestPickerSheet';
+import { useCurrentUser } from '@/entities/user/api/use-auth';
+import { usePreviousSets } from '@/entities/training/api/use-workouts';
+import { RestPickerSheet } from '@/entities/training/components/RestPickerSheet';
 import { RestTimerPanel } from '@/features/workouts/components/RestTimerPanel';
 import { ExerciseCard } from '@/features/workouts/components/ExerciseCard';
-import { ExerciseMenuSheet } from '@/features/workouts/components/ExerciseMenuSheet';
-import { SetKindSheet } from '@/features/workouts/components/SetKindSheet';
-import { completedSetCount } from '@/features/workouts/model/draft';
+import { ExerciseMenuSheet } from '@/entities/training/components/ExerciseMenuSheet';
+import { SetKindSheet } from '@/entities/training/components/SetKindSheet';
+import { completedSetCount } from '@/entities/training/model/draft';
 import {
   useDraftStore,
   useWorkoutDraft,
-} from '@/features/workouts/model/draft-store';
-import { formatClock } from '@/features/workouts/model/format';
-import { restLeftSeconds } from '@/features/workouts/model/rest';
-import { useNow } from '@/features/workouts/model/use-now';
+} from '@/entities/training/model/draft-store';
+import { formatClock } from '@/entities/training/model/format';
+import { restLeftSeconds } from '@/entities/training/model/rest';
+import { useNow } from '@/entities/training/model/use-now';
 import { unlockRestAudio } from '@/shared/lib/rest-signal';
-import { BottomSheet } from '@/shared/ui/bottom-sheet';
+import { ConfirmSheet } from '@/shared/ui/confirm-sheet';
 import { Button } from '@/shared/ui/button';
 import { IconButton } from '@/shared/ui/icon-button';
 import { Skeleton } from '@/shared/ui/skeleton';
@@ -296,40 +296,20 @@ function ActiveWorkoutPage() {
         }}
       />
 
-      <BottomSheet
-        compact
+      <ConfirmSheet
         open={confirmingCancel}
         onOpenChange={setConfirmingCancel}
         title={t('workout.cancelTitle')}
-        footer={
-          <>
-            <Button
-              type="button"
-              variant="secondary"
-              className="min-w-0 flex-1 px-3 text-sm"
-              onClick={() => {
-                setConfirmingCancel(false);
-              }}
-            >
-              {t('workout.keepGoing')}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              className="min-w-0 flex-1 px-3 text-sm"
-              onClick={() => {
-                setConfirmingCancel(false);
-                collapse();
-                store.discard();
-              }}
-            >
-              {t('workout.cancelConfirm')}
-            </Button>
-          </>
-        }
+        cancelLabel={t('workout.keepGoing')}
+        confirmLabel={t('workout.cancelConfirm')}
+        onConfirm={() => {
+          setConfirmingCancel(false);
+          collapse();
+          store.discard();
+        }}
       >
         <Text tone="muted">{t('workout.cancelHint')}</Text>
-      </BottomSheet>
+      </ConfirmSheet>
     </main>
   );
 }

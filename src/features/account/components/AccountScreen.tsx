@@ -2,8 +2,8 @@ import { Link } from '@tanstack/react-router';
 import { ArrowLeft } from 'lucide-react';
 import { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useCurrentUser } from '@/features/auth/api/use-auth';
-import type { CurrentUser } from '@/features/auth/api/current-user.service';
+import { useCurrentUser } from '@/entities/user/api/use-auth';
+import type { CurrentUser } from '@/entities/user/api/current-user.service';
 import { Text } from '@/shared/ui/text';
 
 function AccountScreen({

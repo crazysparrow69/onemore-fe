@@ -11,9 +11,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '@/app/App';
 import { createAppRouter } from '@/app/router';
 import { RouteErrorPage } from '@/app/routes/RouteErrorPage';
-import { getSession } from '@/features/auth/api/auth.service';
+import { getSession } from '@/entities/user/api/auth.service';
 
-vi.mock('@/features/auth/api/auth.service', () => ({
+vi.mock('@/entities/user/api/auth.service', () => ({
   getSession: vi.fn(() => Promise.resolve(null)),
   signOut: vi.fn(() => Promise.resolve()),
   signInWithEmail: vi.fn(() => Promise.resolve()),

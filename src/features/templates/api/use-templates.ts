@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { exercisesKeys } from '@/features/exercises/api/exercises.keys';
+import { exercisesKeys } from '@/entities/exercise/api/exercises.keys';
 import { templatesKeys } from '@/features/templates/api/templates.keys';
 import {
   archiveTemplate,

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { AccountScreen } from '@/features/account/components/AccountScreen';
 import { SettingsForm } from '@/features/account/components/SettingsForm';
-import { useSignOut } from '@/features/auth/api/use-auth';
+import { useSignOut } from '@/entities/user/api/use-auth';
 import { Button } from '@/shared/ui/button';
 
 function SettingsPage() {

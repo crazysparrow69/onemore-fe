@@ -10,9 +10,9 @@ import { initials } from '@/features/account/model/initials';
 import type {
   CurrentUser,
   UserPatch,
-} from '@/features/auth/api/current-user.service';
-import { fieldError } from '@/features/auth/components/field-error';
-import { isApiError } from '@/shared/api/error';
+} from '@/entities/user/api/current-user.service';
+import { fieldError } from '@/shared/lib/field-error';
+import { hasErrorCode } from '@/shared/api/error';
 import { toast } from '@/shared/lib/toast';
 import { Avatar } from '@/shared/ui/avatar';
 import { Button } from '@/shared/ui/button';
@@ -52,7 +52,7 @@ function ProfileForm({ user }: { user: CurrentUser }) {
         toast.success(t('profile.saved'));
       },
       onError: (error) => {
-        if (isApiError(error) && error.code === 'NICKNAME_TAKEN') {
+        if (hasErrorCode(error, 'NICKNAME_TAKEN')) {
           form.setError('nickname', { message: 'validation.nicknameTaken' });
           return;
         }

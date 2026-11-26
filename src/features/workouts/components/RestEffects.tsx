@@ -1,10 +1,10 @@
 import { skipToken, useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { authKeys } from '@/features/auth/api/auth.keys';
-import type { CurrentUser } from '@/features/auth/api/current-user.service';
-import { useDraftStore } from '@/features/workouts/model/draft-store';
-import { formatClock } from '@/features/workouts/model/format';
+import { authKeys } from '@/entities/user/api/auth.keys';
+import type { CurrentUser } from '@/entities/user/api/current-user.service';
+import { useDraftStore } from '@/entities/training/model/draft-store';
+import { formatClock } from '@/entities/training/model/format';
 import { playRestSignal } from '@/shared/lib/rest-signal';
 import { toast } from '@/shared/lib/toast';
 

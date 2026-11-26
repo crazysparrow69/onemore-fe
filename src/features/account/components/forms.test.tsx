@@ -6,12 +6,12 @@ import { SettingsForm } from '@/features/account/components/SettingsForm';
 import {
   patchCurrentUser,
   type CurrentUser,
-} from '@/features/auth/api/current-user.service';
+} from '@/entities/user/api/current-user.service';
 import { ApiError } from '@/shared/api/error';
 
-vi.mock('@/features/auth/api/current-user.service', async (importOriginal) => ({
+vi.mock('@/entities/user/api/current-user.service', async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import('@/features/auth/api/current-user.service')
+    typeof import('@/entities/user/api/current-user.service')
   >()),
   patchCurrentUser: vi.fn(),
 }));

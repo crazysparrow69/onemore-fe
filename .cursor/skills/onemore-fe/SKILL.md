@@ -59,7 +59,7 @@ Feature-level detail, roadmap, phases, open questions: [reference/scope-and-stat
 6. Never send tokens, passwords, emails, or diary/food/body contents to logs, Sentry, or analytics. Sentry session replays mask all inputs and text.
 
 **Data correctness**
-7. The API speaks metric only: weight kg (up to 3 decimals), length cm, time seconds, distance meters. Convert kg<->lb only at display/input, only via `src/shared/lib/units`. Never store converted values.
+7. The API speaks metric only: weight kg (up to 3 decimals), length cm, time seconds, distance meters. Convert kg<->lb only at display/input, only via `src/entities/training/model/format`. Never store converted values.
 8. Every day-scoped write sends `local_date` (YYYY-MM-DD in the user's account IANA time zone) plus a UTC timestamp. Never derive the local date from `toISOString()` or the device time zone silently.
 9. Ids of new records are generated on the client as UUIDv7, so a retried POST is idempotent. Never regenerate an id on retry.
 
@@ -81,7 +81,7 @@ Rule details and rationale: [reference/api-and-auth.md](reference/api-and-auth.m
 
 ## 4. Conventions
 
-- Layout: `src/app/` (router, providers, root layout), `src/features/<feature>/` (auth, onboarding, profile, exercises, workouts, calendar, nutrition), `src/shared/` (ui = shadcn, api, i18n, analytics, lib). Import direction: `app -> features -> shared`. `shared` never imports `features` or `app`; a feature uses another feature only through its `index.ts`.
+- Layout: `src/app/` (router, providers, root layout, flow tests), `src/features/<feature>/` (auth, account, exercises, templates, workouts), `src/entities/<entity>/` (user, exercise, training: api, model, shared components), `src/shared/` (ui = shadcn + shared sheets/states, api, i18n, lib). Import direction: `app -> features -> entities -> shared`, enforced by ESLint `no-restricted-imports`. Entities depend only downwards (`user <- exercise <- training`); features never import `app`; between features only `templates -> exercises` and `workouts -> templates, exercises` are allowed, through the feature's `index.ts` or its components.
 - Server data lives only in TanStack Query. Never copy query data into Zustand or `useState`, never fetch in `useEffect`. Query keys come from one factory per feature.
 - Forms: one Zod schema per form in the feature's `model/`, wired with `zodResolver`. Validation messages are i18n keys.
 - Tests assert behavior, not user-visible copy. Do not assert translated strings, labels, or toast text. See the Tests section in [reference/frontend-patterns.md](reference/frontend-patterns.md).

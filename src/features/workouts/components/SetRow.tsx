@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { Units } from '@/features/auth/api/current-user.service';
+import type { Units } from '@/entities/user/api/current-user.service';
 import {
   acceptsInput,
   FIELD_KEYS,
@@ -8,13 +8,13 @@ import {
   type DraftExercise,
   type DraftSet,
   type SetValueKey,
-} from '@/features/workouts/model/draft';
+} from '@/entities/training/model/draft';
 import {
   columnLabelKey,
   columnTemplate,
-} from '@/features/workouts/model/columns';
-import { setLabel, setMark } from '@/features/workouts/model/display';
-import { matchPrevious } from '@/features/workouts/model/previous';
+} from '@/entities/training/model/columns';
+import { setLabel, setMark } from '@/entities/training/model/display';
+import { matchPrevious } from '@/entities/training/model/previous';
 import { cn } from '@/shared/lib/utils';
 
 const INPUT_MODES: Readonly<

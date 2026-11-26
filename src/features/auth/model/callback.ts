@@ -2,9 +2,9 @@ import { type QueryClient } from '@tanstack/react-query';
 import { isRedirect, redirect } from '@tanstack/react-router';
 import { i18n } from '@/shared/i18n';
 import { toast } from '@/shared/lib/toast';
-import { authKeys } from '@/features/auth/api/auth.keys';
-import { getSession } from '@/features/auth/api/auth.service';
-import { fetchCurrentUser } from '@/features/auth/api/current-user.service';
+import { authKeys } from '@/entities/user/api/auth.keys';
+import { getSession } from '@/entities/user/api/auth.service';
+import { fetchCurrentUser } from '@/entities/user/api/current-user.service';
 
 export async function completeSocialSignIn(
   queryClient: QueryClient,

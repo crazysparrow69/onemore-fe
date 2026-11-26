@@ -1,44 +1,50 @@
+import { zodResolver } from '@hookform/resolvers/zod';
 import { getRouteApi, Link, useRouter } from '@tanstack/react-router';
 import { ChevronRight } from 'lucide-react';
 import { useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import {
   useCreateExercise,
   useUpdateExercise,
-} from '@/features/exercises/api/use-exercise-mutations';
+} from '@/entities/exercise/api/use-exercise-mutations';
 import {
   useExercise,
   useExerciseDictionaries,
   useExerciseLabels,
-} from '@/features/exercises/api/use-exercises';
+} from '@/entities/exercise/api/use-exercises';
 import {
   OptionSheet,
   type OptionSection,
 } from '@/features/exercises/components/OptionSheet';
 import {
-  canSave,
   emptyFormValues,
-  errorsOfDetails,
+  exerciseFormSchema,
+  fieldsOfDetails,
   formValuesOf,
   isDirty,
   toInput,
-  type ExerciseFormErrors,
-  type ExerciseFormField,
   type ExerciseFormValues,
 } from '@/features/exercises/model/exercise-form';
-import { isApiError } from '@/shared/api/error';
+import { apiErrorKey, hasErrorCode, isApiError } from '@/shared/api/error';
 import { toast } from '@/shared/lib/toast';
-import { BottomSheet } from '@/shared/ui/bottom-sheet';
+import { ConfirmSheet } from '@/shared/ui/confirm-sheet';
 import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
 import { TextField } from '@/shared/ui/text-field';
 import { Textarea } from '@/shared/ui/textarea';
+import { useSheet } from '@/shared/lib/use-sheet';
 
 const createRoute = getRouteApi('/exercises/new');
 const editRoute = getRouteApi('/exercises/$exerciseId/edit');
 
 type SheetName = 'equipment' | 'type' | 'primary' | 'secondary';
+
+const SAVE_ERROR_KEYS = {
+  EXERCISE_LIMIT_REACHED: 'exerciseForm.limitReached',
+  EXERCISE_TYPE_LOCKED: 'exerciseForm.typeLocked',
+} as const;
 
 function SelectRow({
   label,
@@ -99,21 +105,31 @@ function ExerciseForm({
   const create = useCreateExercise();
   const update = useUpdateExercise(exerciseId ?? '');
   const mutation = exerciseId ? update : create;
-  const [values, setValues] = useState(initial);
-  const [errors, setErrors] = useState<ExerciseFormErrors>({});
-  const [sheet, setSheet] = useState<SheetName | null>(null);
+  const form = useForm<ExerciseFormValues>({
+    resolver: zodResolver(exerciseFormSchema),
+    mode: 'onChange',
+    defaultValues: initial,
+  });
+  const values = useWatch({ control: form.control });
+  const { errors, isValid } = form.formState;
+  const sheet = useSheet<SheetName>();
   const [confirmingCancel, setConfirmingCancel] = useState(false);
 
   const data = dictionaries.data;
-  const dirty = isDirty(values, initial);
+  const primary = values.primary ?? [];
+  const secondary = values.secondary ?? [];
   const typeLabel = data?.types.find((type) => type.id === values.type)?.label;
 
+  function change(field: 'type' | 'equipment', value: string): void;
+  function change(field: 'primary' | 'secondary', value: string[]): void;
   function change(
-    patch: Partial<ExerciseFormValues>,
-    field: ExerciseFormField,
-  ) {
-    setValues((current) => ({ ...current, ...patch }));
-    setErrors((current) => ({ ...current, [field]: undefined }));
+    field: 'type' | 'equipment' | 'primary' | 'secondary',
+    value: string | string[],
+  ): void {
+    form.setValue(field, value, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   }
 
   function leave() {
@@ -124,8 +140,8 @@ function ExerciseForm({
     }
   }
 
-  function save() {
-    mutation.mutate(toInput(values), {
+  function save(input: ExerciseFormValues) {
+    mutation.mutate(toInput(input), {
       onSuccess: (saved) => {
         toast.success(t('exerciseForm.saved'));
         void router.navigate({
@@ -135,23 +151,23 @@ function ExerciseForm({
         });
       },
       onError: (error) => {
-        if (isApiError(error) && error.code === 'VALIDATION_FAILED') {
-          setErrors(errorsOfDetails(error.details));
+        if (isApiError(error) && hasErrorCode(error, 'VALIDATION_FAILED')) {
+          for (const field of fieldsOfDetails(error.details)) {
+            form.setError(field, {});
+          }
           toast.error(t('exerciseForm.checkFields'));
           return;
         }
-        if (isApiError(error) && error.code === 'EXERCISE_LIMIT_REACHED') {
-          toast.error(t('exerciseForm.limitReached'));
-          return;
-        }
-        if (isApiError(error) && error.code === 'EXERCISE_TYPE_LOCKED') {
-          toast.error(t('exerciseForm.typeLocked'));
-          return;
-        }
-        toast.error(t('errors.generic.description'));
+        toast.error(
+          t(apiErrorKey(error, SAVE_ERROR_KEYS, 'errors.generic.description')),
+        );
       },
     });
   }
+
+  const submit = () => {
+    void form.handleSubmit(save)();
+  };
 
   const equipmentSections: OptionSection[] = [
     { id: 'equipment', label: null, options: data?.equipment ?? [] },
@@ -175,7 +191,7 @@ function ExerciseForm({
       id: group.id,
       label: group.label,
       options: group.muscles.filter(
-        (muscle) => !muscle.primaryOnly && !values.primary.includes(muscle.id),
+        (muscle) => !muscle.primaryOnly && !primary.includes(muscle.id),
       ),
     }))
     .filter((group) => group.options.length > 0);
@@ -189,7 +205,7 @@ function ExerciseForm({
           size="sm"
           className="justify-self-start px-2"
           onClick={() => {
-            if (dirty) {
+            if (isDirty(values, initial)) {
               setConfirmingCancel(true);
             } else {
               leave();
@@ -208,9 +224,9 @@ function ExerciseForm({
           variant="ghost"
           size="sm"
           className="justify-self-end px-2 text-primary"
-          disabled={!canSave(values) || !data}
+          disabled={!isValid || !data}
           loading={mutation.isPending}
-          onClick={save}
+          onClick={submit}
         >
           {t('exerciseForm.save')}
         </Button>
@@ -220,32 +236,29 @@ function ExerciseForm({
         className="flex flex-1 flex-col gap-4 px-4 pb-10"
         onSubmit={(event) => {
           event.preventDefault();
-          if (canSave(values) && data) {
-            save();
+          if (data) {
+            submit();
           }
         }}
       >
         <TextField
           label={t('exerciseForm.name')}
           variant="outline"
-          value={values.name}
           autoFocus={!exerciseId}
           autoComplete="off"
           placeholder={t('exerciseForm.namePlaceholder')}
           error={errors.name ? t('exerciseForm.errors.name') : undefined}
-          onChange={(event) => {
-            change({ name: event.target.value }, 'name');
-          }}
+          {...form.register('name')}
         />
 
         <div className="flex flex-col gap-2">
           <SelectRow
             label={t('exerciseForm.equipment')}
-            value={labels.equipment(values.equipment)}
+            value={labels.equipment(values.equipment ?? '')}
             placeholder={t('exerciseForm.choose')}
             invalid={Boolean(errors.equipment)}
             onClick={() => {
-              setSheet('equipment');
+              sheet.show('equipment');
             }}
           />
           <SelectRow
@@ -255,7 +268,7 @@ function ExerciseForm({
             invalid={Boolean(errors.type)}
             disabled={typeLocked}
             onClick={() => {
-              setSheet('type');
+              sheet.show('type');
             }}
           />
           {typeLocked ? (
@@ -265,23 +278,23 @@ function ExerciseForm({
           ) : null}
           <SelectRow
             label={t('exerciseForm.primaryMuscle')}
-            value={values.primary.map((id) => labels.muscle(id)).join(', ')}
+            value={primary.map((id) => labels.muscle(id)).join(', ')}
             placeholder={t('exerciseForm.choose')}
-            invalid={Boolean(errors.primaryMuscles)}
+            invalid={Boolean(errors.primary)}
             onClick={() => {
-              setSheet('primary');
+              sheet.show('primary');
             }}
           />
           <SelectRow
             label={t('exerciseForm.secondaryMuscles')}
-            value={values.secondary.map((id) => labels.muscle(id)).join(', ')}
+            value={secondary.map((id) => labels.muscle(id)).join(', ')}
             placeholder={t('exerciseForm.none')}
-            invalid={Boolean(errors.secondaryMuscles)}
+            invalid={Boolean(errors.secondary)}
             onClick={() => {
-              setSheet('secondary');
+              sheet.show('secondary');
             }}
           />
-          {errors.type || errors.primaryMuscles || errors.secondaryMuscles ? (
+          {errors.type || errors.primary || errors.secondary ? (
             <Text size="sm" tone="danger">
               {t('exerciseForm.errors.muscles')}
             </Text>
@@ -294,14 +307,11 @@ function ExerciseForm({
           </Text>
           <Textarea
             id="exercise-steps"
-            value={values.steps}
             placeholder={t('exerciseForm.instructionsHint')}
-            aria-invalid={errors.instructions ? true : undefined}
-            onChange={(event) => {
-              change({ steps: event.target.value }, 'instructions');
-            }}
+            aria-invalid={errors.steps ? true : undefined}
+            {...form.register('steps')}
           />
-          {errors.instructions ? (
+          {errors.steps ? (
             <Text size="sm" tone="danger">
               {t('exerciseForm.errors.instructions')}
             </Text>
@@ -310,113 +320,77 @@ function ExerciseForm({
       </form>
 
       <OptionSheet
-        open={sheet === 'equipment'}
-        onOpenChange={(open) => {
-          setSheet(open ? 'equipment' : null);
-        }}
+        {...sheet.bind('equipment')}
         title={t('exerciseForm.equipment')}
         sections={equipmentSections}
-        selected={[values.equipment]}
+        selected={values.equipment ? [values.equipment] : []}
         clearLabel={t('exerciseForm.clear')}
         doneLabel={t('exerciseForm.done')}
         onApply={([id]) => {
-          setSheet(null);
+          sheet.close();
           if (id !== undefined) {
-            change({ equipment: id }, 'equipment');
+            change('equipment', id);
           }
         }}
       />
       <OptionSheet
-        open={sheet === 'type'}
-        onOpenChange={(open) => {
-          setSheet(open ? 'type' : null);
-        }}
+        {...sheet.bind('type')}
         title={t('exerciseForm.type')}
         sections={typeSections}
-        selected={[values.type]}
+        selected={values.type ? [values.type] : []}
         columns={1}
         thumbs={false}
         clearLabel={t('exerciseForm.clear')}
         doneLabel={t('exerciseForm.done')}
         onApply={([id]) => {
-          setSheet(null);
+          sheet.close();
           if (id !== undefined) {
-            change({ type: id }, 'type');
+            change('type', id);
           }
         }}
       />
       <OptionSheet
-        open={sheet === 'primary'}
-        onOpenChange={(open) => {
-          setSheet(open ? 'primary' : null);
-        }}
+        {...sheet.bind('primary')}
         title={t('exerciseForm.primaryMuscle')}
         sections={primarySections}
-        selected={values.primary}
+        selected={primary}
         clearLabel={t('exerciseForm.clear')}
         doneLabel={t('exerciseForm.done')}
         onApply={([id]) => {
-          setSheet(null);
+          sheet.close();
           if (id !== undefined) {
-            setValues((current) => ({
-              ...current,
-              primary: [id],
-              secondary: current.secondary.filter((muscle) => muscle !== id),
-            }));
-            setErrors((current) => ({
-              ...current,
-              primaryMuscles: undefined,
-            }));
+            change('primary', [id]);
+            change(
+              'secondary',
+              secondary.filter((muscle) => muscle !== id),
+            );
           }
         }}
       />
       <OptionSheet
-        open={sheet === 'secondary'}
-        onOpenChange={(open) => {
-          setSheet(open ? 'secondary' : null);
-        }}
+        {...sheet.bind('secondary')}
         title={t('exerciseForm.secondaryMuscles')}
         sections={secondarySections}
-        selected={values.secondary}
+        selected={secondary}
         multiple
         clearLabel={t('exerciseForm.clear')}
         doneLabel={t('exerciseForm.done')}
         onApply={(ids) => {
-          setSheet(null);
-          change({ secondary: ids }, 'secondaryMuscles');
+          sheet.close();
+          change('secondary', ids);
         }}
       />
 
-      <BottomSheet
-        compact
+      <ConfirmSheet
         open={confirmingCancel}
         onOpenChange={setConfirmingCancel}
         title={t('exerciseForm.discardTitle')}
-        footer={
-          <>
-            <Button
-              type="button"
-              variant="secondary"
-              className="min-w-0 flex-1 px-3 text-sm"
-              onClick={() => {
-                setConfirmingCancel(false);
-              }}
-            >
-              {t('exerciseForm.keepEditing')}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              className="min-w-0 flex-1 px-3 text-sm"
-              onClick={leave}
-            >
-              {t('exerciseForm.discard')}
-            </Button>
-          </>
-        }
+        cancelLabel={t('exerciseForm.keepEditing')}
+        confirmLabel={t('exerciseForm.discard')}
+        onConfirm={leave}
       >
         <Text tone="muted">{t('exerciseForm.discardHint')}</Text>
-      </BottomSheet>
+      </ConfirmSheet>
     </main>
   );
 }

@@ -1,15 +1,15 @@
 import { getRouteApi, Navigate, useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useCurrentUser } from '@/features/auth/api/use-auth';
-import type { ExerciseListItem } from '@/features/exercises/api/exercises.service';
-import { useExerciseDictionaries } from '@/features/exercises/api/use-exercises';
+import { useCurrentUser } from '@/entities/user/api/use-auth';
+import type { ExerciseListItem } from '@/entities/exercise/api/exercises.service';
+import { useExerciseDictionaries } from '@/entities/exercise/api/use-exercises';
 import { ExerciseCatalog } from '@/features/exercises/components/ExerciseListPage';
 import {
   useDraftStore,
   useWorkoutDraft,
-} from '@/features/workouts/model/draft-store';
-import { MAX_EXERCISES } from '@/features/workouts/model/draft';
+} from '@/entities/training/model/draft-store';
+import { MAX_EXERCISES } from '@/entities/training/model/draft';
 
 const route = getRouteApi('/workout/add');
 

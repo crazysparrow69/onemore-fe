@@ -1,12 +1,12 @@
 import { SkipForward } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { formatClock } from '@/features/workouts/model/format';
+import { formatClock } from '@/entities/training/model/format';
 import {
   REST_ADJUST_SECONDS,
   restLeftSeconds,
   type Rest,
-} from '@/features/workouts/model/rest';
-import { useNow } from '@/features/workouts/model/use-now';
+} from '@/entities/training/model/rest';
+import { useNow } from '@/entities/training/model/use-now';
 
 function RestTimerPanel({
   rest,

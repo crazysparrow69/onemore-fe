@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import type { Template } from '@/features/templates/api/templates.service';
 import type { TemplateChange } from '@/features/templates/model/update-from-workout';
-import { formatClock } from '@/features/workouts/model/format';
+import { formatClock } from '@/entities/training/model/format';
 
 export function exercisesLine(template: Template): string {
   return template.exercises.map((exercise) => exercise.name).join(', ');

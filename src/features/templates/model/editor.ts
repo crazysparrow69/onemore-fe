@@ -1,7 +1,9 @@
 import { z } from 'zod';
-import type { Units } from '@/features/auth/api/current-user.service';
+import { blankToNull, mapById, moveById, takeRoom } from '@/shared/lib/list';
+import { UNITS, type Units } from '@/entities/user/api/current-user.service';
 import {
   draftFieldRuleSchema,
+  exerciseFromPicked,
   MAX_EXERCISES,
   MAX_SETS,
   SET_KINDS,
@@ -11,8 +13,8 @@ import {
   type PickedExercise,
   type SetKind,
   type SetValueKey,
-} from '@/features/workouts/model/draft';
-import { previousValues } from '@/features/workouts/model/previous';
+} from '@/entities/training/model/draft';
+import { previousValues } from '@/entities/training/model/previous';
 import type { TemplatePayload } from '@/features/templates/model/payload';
 
 export const MAX_TEMPLATE_NAME = 80;
@@ -45,7 +47,7 @@ export type EditorExercise = z.infer<typeof editorExerciseSchema>;
 export const editorSchema = z.object({
   templateId: z.string(),
   mode: z.enum(['new', 'edit']),
-  units: z.enum(['kg', 'lb']),
+  units: z.enum(UNITS),
   name: z.string(),
   notes: z.string(),
   exercises: z.array(editorExerciseSchema),
@@ -192,22 +194,13 @@ export function addExercises(
   picked: readonly PickedExercise[],
   newId: IdFactory,
 ): Editor {
-  const room = MAX_EXERCISES - editor.exercises.length;
-  const added = picked
-    .slice(0, Math.max(0, room))
-    .map((item): EditorExercise => ({
-      id: newId(),
-      exerciseId: item.exerciseId,
-      name: item.name,
-      image: item.image,
-      type: item.type,
-      custom: item.custom,
+  const added = takeRoom(picked, editor.exercises.length, MAX_EXERCISES).map(
+    (item): EditorExercise => ({
+      ...exerciseFromPicked(item, newId),
       archived: false,
-      fields: item.fields,
-      notes: '',
-      restSeconds: null,
       sets: [emptyEditorSet(newId())],
-    }));
+    }),
+  );
   return { ...editor, exercises: [...editor.exercises, ...added] };
 }
 
@@ -216,12 +209,7 @@ function mapExercise(
   id: string,
   change: (exercise: EditorExercise) => EditorExercise,
 ): Editor {
-  return {
-    ...editor,
-    exercises: editor.exercises.map((exercise) =>
-      exercise.id === id ? change(exercise) : exercise,
-    ),
-  };
+  return { ...editor, exercises: mapById(editor.exercises, id, change) };
 }
 
 export function setName(editor: Editor, name: string): Editor {
@@ -240,17 +228,8 @@ export function moveExercise(
   id: string,
   direction: -1 | 1,
 ): Editor {
-  const index = editor.exercises.findIndex((exercise) => exercise.id === id);
-  const target = index + direction;
-  if (index < 0 || target < 0 || target >= editor.exercises.length) {
-    return editor;
-  }
-  const exercises = [...editor.exercises];
-  const [moved] = exercises.splice(index, 1);
-  if (moved) {
-    exercises.splice(target, 0, moved);
-  }
-  return { ...editor, exercises };
+  const exercises = moveById(editor.exercises, id, direction);
+  return exercises === editor.exercises ? editor : { ...editor, exercises };
 }
 
 export function setExerciseNotes(
@@ -308,9 +287,7 @@ export function updateSet(
 ): Editor {
   return mapExercise(editor, exerciseId, (exercise) => ({
     ...exercise,
-    sets: exercise.sets.map((set) =>
-      set.id === setId ? { ...set, ...patch } : set,
-    ),
+    sets: mapById(exercise.sets, setId, (set) => ({ ...set, ...patch })),
   }));
 }
 
@@ -318,18 +295,13 @@ export function canSave(editor: Editor): boolean {
   return editor.name.trim().length > 0 && editor.exercises.length > 0;
 }
 
-function orNull(text: string): string | null {
-  const trimmed = text.trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
 export function toPayload(editor: Editor): TemplatePayload {
   return {
     name: editor.name.trim(),
-    notes: orNull(editor.notes),
+    notes: blankToNull(editor.notes),
     exercises: editor.exercises.map((exercise) => ({
       exerciseId: exercise.exerciseId,
-      notes: orNull(exercise.notes),
+      notes: blankToNull(exercise.notes),
       restSeconds: exercise.restSeconds,
       sets: exercise.sets.map((set) => ({
         kind: set.kind,

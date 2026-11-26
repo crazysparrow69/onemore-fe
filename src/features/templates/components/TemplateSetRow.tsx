@@ -1,17 +1,17 @@
 import { useTranslation } from 'react-i18next';
-import type { Units } from '@/features/auth/api/current-user.service';
+import type { Units } from '@/entities/user/api/current-user.service';
 import type {
   EditorExercise,
   EditorSet,
 } from '@/features/templates/model/editor';
 import { setGridTemplate } from '@/features/templates/model/grid';
-import { columnLabelKey } from '@/features/workouts/model/columns';
-import { setMark } from '@/features/workouts/model/display';
+import { columnLabelKey } from '@/entities/training/model/columns';
+import { setMark } from '@/entities/training/model/display';
 import {
   acceptsInput,
   FIELD_KEYS,
   type SetValueKey,
-} from '@/features/workouts/model/draft';
+} from '@/entities/training/model/draft';
 import { cn } from '@/shared/lib/utils';
 
 const INPUT_MODES: Readonly<

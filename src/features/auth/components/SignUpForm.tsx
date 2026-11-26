@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
 import { Text } from '@/shared/ui/text';
 import { TextField } from '@/shared/ui/text-field';
-import { useSignUp } from '@/features/auth/api/use-auth';
+import { useSignUp } from '@/entities/user/api/use-auth';
 import { AuthScreen, OrDivider } from '@/features/auth/components/AuthScreen';
-import { fieldError } from '@/features/auth/components/field-error';
+import { fieldError } from '@/shared/lib/field-error';
 import { GoogleSignInButton } from '@/features/auth/components/GoogleSignInButton';
 import { signUpSchema, type SignUpValues } from '@/features/auth/model/schema';
 

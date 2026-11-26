@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
-import { useGoogleSignIn } from '@/features/auth/api/use-auth';
+import { useGoogleSignIn } from '@/entities/user/api/use-auth';
 import { GoogleIcon } from '@/features/auth/components/GoogleIcon';
 
 function GoogleSignInButton() {

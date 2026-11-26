@@ -1,21 +1,23 @@
 import { getRouteApi, Link, useRouter } from '@tanstack/react-router';
 import { ArrowLeft, Ellipsis } from 'lucide-react';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ApiError } from '@/shared/api/error';
+import { hasErrorCode } from '@/shared/api/error';
 import {
   useExercise,
   useExerciseLabels,
-} from '@/features/exercises/api/use-exercises';
-import { useDeleteExercise } from '@/features/exercises/api/use-exercise-mutations';
-import { ExercisePhotos } from '@/features/exercises/components/ExercisePhotos';
-import { ExercisePlaceholder } from '@/features/exercises/components/ExercisePlaceholder';
+} from '@/entities/exercise/api/use-exercises';
+import { useDeleteExercise } from '@/entities/exercise/api/use-exercise-mutations';
+import { ExercisePhotos } from '@/entities/exercise/components/ExercisePhotos';
+import { ExercisePlaceholder } from '@/entities/exercise/components/ExercisePlaceholder';
 import { toast } from '@/shared/lib/toast';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import { Button } from '@/shared/ui/button';
+import { ErrorState, NotFoundState } from '@/shared/ui/error-state';
+import { ConfirmSheet } from '@/shared/ui/confirm-sheet';
 import { IconButton } from '@/shared/ui/icon-button';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
+import { useSheet } from '@/shared/lib/use-sheet';
 
 const route = getRouteApi('/exercises/$exerciseId');
 
@@ -33,9 +35,9 @@ function ExercisePage() {
   const router = useRouter();
   const exercise = useExercise(exerciseId);
   const labels = useExerciseLabels();
-  const [menu, setMenu] = useState<'actions' | 'delete' | null>(null);
+  const menu = useSheet<'actions' | 'delete'>();
   const remove = useDeleteExercise(exerciseId, async () => {
-    setMenu(null);
+    menu.close();
     toast.success(t('catalog.deleted'));
     await router.navigate({ to: '/exercises', replace: true });
   });
@@ -57,9 +59,7 @@ function ExercisePage() {
   }
 
   const data = exercise.data;
-  const notFound =
-    exercise.error instanceof ApiError &&
-    exercise.error.code === 'EXERCISE_NOT_FOUND';
+  const notFound = hasErrorCode(exercise.error, 'EXERCISE_NOT_FOUND');
 
   const secondary = data
     ? data.secondaryMuscles.map((id) => labels.muscle(id)).join(', ')
@@ -84,7 +84,7 @@ function ExercisePage() {
           <IconButton
             aria-label={t('catalog.menu')}
             onClick={() => {
-              setMenu('actions');
+              menu.show('actions');
             }}
           >
             <Ellipsis aria-hidden />
@@ -101,26 +101,18 @@ function ExercisePage() {
       ) : null}
 
       {exercise.isError && !data ? (
-        <div className="flex flex-col items-start gap-3 px-4 py-4">
-          <Text tone={notFound ? 'muted' : 'danger'}>
-            {notFound ? t('catalog.notFound') : t('errors.generic.description')}
-          </Text>
-          {notFound ? (
-            <Button asChild variant="secondary">
-              <Link to="/exercises">{t('catalog.toList')}</Link>
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                void exercise.refetch();
-              }}
-            >
-              {t('common.retry')}
-            </Button>
-          )}
-        </div>
+        notFound ? (
+          <NotFoundState className="px-4 py-4" message={t('catalog.notFound')}>
+            <Link to="/exercises">{t('catalog.toList')}</Link>
+          </NotFoundState>
+        ) : (
+          <ErrorState
+            className="px-4 py-4"
+            onRetry={() => {
+              void exercise.refetch();
+            }}
+          />
+        )
       ) : null}
 
       {data ? (
@@ -189,14 +181,7 @@ function ExercisePage() {
         </>
       ) : null}
 
-      <BottomSheet
-        compact
-        open={menu === 'actions'}
-        onOpenChange={(open) => {
-          setMenu(open ? 'actions' : null);
-        }}
-        title={data?.name ?? ''}
-      >
+      <BottomSheet compact {...menu.bind('actions')} title={data?.name ?? ''}>
         <div className="flex flex-col gap-2">
           <Button asChild variant="secondary" size="lg" fullWidth>
             <Link to="/exercises/$exerciseId/edit" params={{ exerciseId }}>
@@ -209,46 +194,23 @@ function ExercisePage() {
             size="lg"
             fullWidth
             onClick={() => {
-              setMenu('delete');
+              menu.show('delete');
             }}
           >
             {t('catalog.delete')}
           </Button>
         </div>
       </BottomSheet>
-      <BottomSheet
-        compact
-        open={menu === 'delete'}
-        onOpenChange={(open) => {
-          setMenu(open ? 'delete' : null);
-        }}
+      <ConfirmSheet
+        {...menu.bind('delete')}
         title={t('catalog.deleteTitle')}
-        footer={
-          <>
-            <Button
-              type="button"
-              variant="secondary"
-              className="min-w-0 flex-1 px-3 text-sm"
-              onClick={() => {
-                setMenu(null);
-              }}
-            >
-              {t('common.cancel')}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              className="min-w-0 flex-1 px-3 text-sm"
-              loading={remove.isPending}
-              onClick={removeExercise}
-            >
-              {t('catalog.delete')}
-            </Button>
-          </>
-        }
+        cancelLabel={t('common.cancel')}
+        confirmLabel={t('catalog.delete')}
+        onConfirm={removeExercise}
+        pending={remove.isPending}
       >
         <Text tone="muted">{t('catalog.deleteHint')}</Text>
-      </BottomSheet>
+      </ConfirmSheet>
     </main>
   );
 }

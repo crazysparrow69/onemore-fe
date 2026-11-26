@@ -1,31 +1,31 @@
 import { Navigate, useRouter } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { CurrentUser } from '@/features/auth/api/current-user.service';
-import { useCurrentUser } from '@/features/auth/api/use-auth';
+import type { CurrentUser } from '@/entities/user/api/current-user.service';
+import { useCurrentUser } from '@/entities/user/api/use-auth';
 import {
   useSaveTemplate,
   useTemplates,
 } from '@/features/templates/api/use-templates';
 import { UpdateProgramToggle } from '@/features/templates/components/UpdateProgramToggle';
 import { computeTemplateUpdate } from '@/features/templates/model/update-from-workout';
-import { useSaveWorkout } from '@/features/workouts/api/use-workouts';
+import { useSaveWorkout } from '@/entities/training/api/use-workouts';
 import {
   completedSetCount,
   toWorkoutPayload,
   unfinishedSetCount,
   type Draft,
-} from '@/features/workouts/model/draft';
+} from '@/entities/training/model/draft';
 import {
   useDraftStore,
   useWorkoutDraft,
-} from '@/features/workouts/model/draft-store';
+} from '@/entities/training/model/draft-store';
 import {
   fromLocalInput,
   parseInteger,
   toLocalInput,
-} from '@/features/workouts/model/format';
-import { isApiError } from '@/shared/api/error';
+} from '@/entities/training/model/format';
+import { apiErrorKey } from '@/shared/api/error';
 import { toast } from '@/shared/lib/toast';
 import { Button } from '@/shared/ui/button';
 import { Input } from '@/shared/ui/input';
@@ -33,34 +33,17 @@ import { Text } from '@/shared/ui/text';
 import { TextField } from '@/shared/ui/text-field';
 import { Textarea } from '@/shared/ui/textarea';
 
-type ErrorKey =
-  | 'workout.errors.empty'
-  | 'workout.errors.time'
-  | 'workout.errors.values'
-  | 'workout.errors.exerciseChanged'
-  | 'workout.errors.network'
-  | 'workout.errors.generic';
+const ERROR_KEYS = {
+  WORKOUT_EMPTY: 'workout.errors.empty',
+  WORKOUT_TIME_INVALID: 'workout.errors.time',
+  SET_VALUES_INVALID: 'workout.errors.values',
+  VALIDATION_FAILED: 'workout.errors.values',
+  EXERCISE_CHANGED: 'workout.errors.exerciseChanged',
+  NETWORK_ERROR: 'workout.errors.network',
+} as const;
 
-function errorKey(error: unknown): ErrorKey {
-  if (!isApiError(error)) {
-    return 'workout.errors.generic';
-  }
-  switch (error.code) {
-    case 'WORKOUT_EMPTY':
-      return 'workout.errors.empty';
-    case 'WORKOUT_TIME_INVALID':
-      return 'workout.errors.time';
-    case 'SET_VALUES_INVALID':
-    case 'VALIDATION_FAILED':
-      return 'workout.errors.values';
-    case 'EXERCISE_CHANGED':
-      return 'workout.errors.exerciseChanged';
-    case 'NETWORK_ERROR':
-      return 'workout.errors.network';
-    default:
-      return 'workout.errors.generic';
-  }
-}
+const errorKey = (error: unknown) =>
+  apiErrorKey(error, ERROR_KEYS, 'workout.errors.generic');
 
 function FinishForm({ draft, user }: { draft: Draft; user: CurrentUser }) {
   const { t } = useTranslation();

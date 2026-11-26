@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { api } from '@/features/auth/api/http';
+import { api } from '@/entities/user/api/http';
 import type { TemplatePayload } from '@/features/templates/model/payload';
 import type { ApiClient } from '@/shared/api/client';
-import { ApiError } from '@/shared/api/error';
+import { parseResponse, resourcePath } from '@/shared/api/parse';
 
 const setSchema = z.object({
   kind: z.enum(['warmup', 'working', 'drop', 'failure']),
@@ -41,38 +41,30 @@ export type TemplateExercise = z.infer<typeof exerciseSchema>;
 export type TemplateSet = z.infer<typeof setSchema>;
 export type TemplateList = z.infer<typeof listSchema>;
 
-function parse<T>(schema: z.ZodType<T>, value: unknown): T {
-  const parsed = schema.safeParse(value);
-  if (!parsed.success) {
-    throw new ApiError(500, 'INVALID_RESPONSE', 'Request failed');
-  }
-  return parsed.data;
-}
-
 export async function saveTemplate(
   id: string,
   payload: TemplatePayload,
   client: ApiClient = api,
 ): Promise<Template> {
-  return parse(
+  return parseResponse(
     templateSchema,
-    await client.put(`/templates/${encodeURIComponent(id)}`, payload),
+    await client.put(resourcePath('/templates', id), payload),
   );
 }
 
 export async function fetchTemplates(
   client: ApiClient = api,
 ): Promise<TemplateList> {
-  return parse(listSchema, await client.get('/templates'));
+  return parseResponse(listSchema, await client.get('/templates'));
 }
 
 export async function fetchTemplate(
   id: string,
   client: ApiClient = api,
 ): Promise<Template> {
-  return parse(
+  return parseResponse(
     templateSchema,
-    await client.get(`/templates/${encodeURIComponent(id)}`),
+    await client.get(resourcePath('/templates', id)),
   );
 }
 
@@ -80,5 +72,5 @@ export async function archiveTemplate(
   id: string,
   client: ApiClient = api,
 ): Promise<void> {
-  await client.delete(`/templates/${encodeURIComponent(id)}`);
+  await client.delete(resourcePath('/templates', id));
 }

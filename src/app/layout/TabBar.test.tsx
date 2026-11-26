@@ -13,11 +13,11 @@ import { createAppRouter } from '@/app/router';
 import {
   fetchCurrentUser,
   type CurrentUser,
-} from '@/features/auth/api/current-user.service';
-import { fetchWorkouts } from '@/features/workouts/api/workouts.service';
-import { useDraftStore } from '@/features/workouts/model/draft-store';
+} from '@/entities/user/api/current-user.service';
+import { fetchWorkouts } from '@/entities/training/api/workouts.service';
+import { useDraftStore } from '@/entities/training/model/draft-store';
 
-vi.mock('@/features/auth/api/auth.service', () => ({
+vi.mock('@/entities/user/api/auth.service', () => ({
   getSession: vi.fn(() => Promise.resolve({ email: 'ada@example.com' })),
   signOut: vi.fn(() => Promise.resolve()),
   signInWithEmail: vi.fn(() => Promise.resolve()),
@@ -27,16 +27,16 @@ vi.mock('@/features/auth/api/auth.service', () => ({
   refreshAccessToken: vi.fn(() => Promise.resolve(null)),
 }));
 
-vi.mock('@/features/auth/api/current-user.service', async (importOriginal) => ({
+vi.mock('@/entities/user/api/current-user.service', async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import('@/features/auth/api/current-user.service')
+    typeof import('@/entities/user/api/current-user.service')
   >()),
   fetchCurrentUser: vi.fn(),
 }));
 
-vi.mock('@/features/workouts/api/workouts.service', async (importOriginal) => ({
+vi.mock('@/entities/training/api/workouts.service', async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import('@/features/workouts/api/workouts.service')
+    typeof import('@/entities/training/api/workouts.service')
   >()),
   fetchWorkouts: vi.fn(),
 }));

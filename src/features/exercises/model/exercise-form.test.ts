@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { ExerciseDetails } from '@/features/exercises/api/exercises.service';
+import type { ExerciseDetails } from '@/entities/exercise/api/exercises.service';
 import {
-  canSave,
   emptyFormValues,
-  errorsOfDetails,
+  exerciseFormSchema,
+  fieldsOfDetails,
   formValuesOf,
   isDirty,
   toInput,
@@ -48,10 +48,13 @@ describe('exercise form model', () => {
       primary: ['lats'],
     };
 
-    expect(canSave(values)).toBe(true);
-    expect(canSave({ ...values, name: '   ' })).toBe(false);
-    expect(canSave({ ...values, type: '' })).toBe(false);
-    expect(canSave({ ...values, primary: [] })).toBe(false);
+    const valid = (candidate: typeof values) =>
+      exerciseFormSchema.safeParse(candidate).success;
+
+    expect(valid(values)).toBe(true);
+    expect(valid({ ...values, name: '   ' })).toBe(false);
+    expect(valid({ ...values, type: '' })).toBe(false);
+    expect(valid({ ...values, primary: [] })).toBe(false);
   });
 
   it('round-trips an exercise through the form', () => {
@@ -85,20 +88,21 @@ describe('exercise form model', () => {
     const initial = formValuesOf(details);
 
     expect(isDirty(initial, initial)).toBe(false);
-    expect(isDirty({ ...initial, name: 'Other' }, initial)).toBe(true);
-    expect(isDirty({ ...initial, secondary: [] }, initial)).toBe(true);
+    expect(isDirty({ name: 'Other' }, initial)).toBe(true);
+    expect(isDirty({ secondary: [] }, initial)).toBe(true);
   });
 
   it('maps backend issue paths to form fields', () => {
     expect(
-      errorsOfDetails([
+      fieldsOfDetails([
         { path: 'name', message: 'x' },
         { path: 'primaryMuscles.0', message: 'x' },
+        { path: 'primaryMuscles.1', message: 'x' },
         { path: 'instructions.3', message: 'x' },
         { path: 'unknown', message: 'x' },
       ]),
-    ).toEqual({ name: true, primaryMuscles: true, instructions: true });
-    expect(errorsOfDetails('nope')).toEqual({});
-    expect(errorsOfDetails(undefined)).toEqual({});
+    ).toEqual(['name', 'primary', 'steps']);
+    expect(fieldsOfDetails('nope')).toEqual([]);
+    expect(fieldsOfDetails(undefined)).toEqual([]);
   });
 });

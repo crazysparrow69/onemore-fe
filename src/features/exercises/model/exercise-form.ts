@@ -2,35 +2,28 @@ import { z } from 'zod';
 import type {
   ExerciseDetails,
   ExerciseInput,
-} from '@/features/exercises/api/exercises.service';
+} from '@/entities/exercise/api/exercises.service';
 
-export interface ExerciseFormValues {
-  name: string;
-  type: string;
-  primary: string[];
-  secondary: string[];
-  equipment: string;
-  steps: string;
-}
+export const exerciseFormSchema = z.object({
+  name: z.string().refine((value) => value.trim().length > 0),
+  type: z.string().min(1),
+  primary: z.array(z.string()).min(1),
+  secondary: z.array(z.string()),
+  equipment: z.string(),
+  steps: z.string(),
+});
 
-export type ExerciseFormField =
-  | 'name'
-  | 'type'
-  | 'primaryMuscles'
-  | 'secondaryMuscles'
-  | 'equipment'
-  | 'instructions';
+export type ExerciseFormValues = z.infer<typeof exerciseFormSchema>;
+export type ExerciseFormField = keyof ExerciseFormValues;
 
-export type ExerciseFormErrors = Partial<Record<ExerciseFormField, true>>;
-
-const FIELDS: readonly string[] = [
-  'name',
-  'type',
-  'primaryMuscles',
-  'secondaryMuscles',
-  'equipment',
-  'instructions',
-];
+const FIELD_OF_ISSUE: Readonly<Record<string, ExerciseFormField>> = {
+  name: 'name',
+  type: 'type',
+  primaryMuscles: 'primary',
+  secondaryMuscles: 'secondary',
+  equipment: 'equipment',
+  instructions: 'steps',
+};
 
 const issuesSchema = z.array(z.object({ path: z.string() }));
 
@@ -56,19 +49,11 @@ export function formValuesOf(exercise: ExerciseDetails): ExerciseFormValues {
   };
 }
 
-export function canSave(values: ExerciseFormValues): boolean {
-  return (
-    values.name.trim().length > 0 &&
-    values.type.length > 0 &&
-    values.primary.length > 0
-  );
-}
-
 export function isDirty(
-  values: ExerciseFormValues,
+  values: Partial<ExerciseFormValues>,
   initial: ExerciseFormValues,
 ): boolean {
-  return JSON.stringify(values) !== JSON.stringify(initial);
+  return JSON.stringify({ ...initial, ...values }) !== JSON.stringify(initial);
 }
 
 export function toInput(values: ExerciseFormValues): ExerciseInput {
@@ -84,17 +69,15 @@ export function toInput(values: ExerciseFormValues): ExerciseInput {
   };
 }
 
-export function errorsOfDetails(details: unknown): ExerciseFormErrors {
+export function fieldsOfDetails(details: unknown): ExerciseFormField[] {
   const parsed = issuesSchema.safeParse(details);
-  const errors: ExerciseFormErrors = {};
   if (!parsed.success) {
-    return errors;
+    return [];
   }
-  for (const issue of parsed.data) {
+  const fields = parsed.data.flatMap((issue) => {
     const [head] = issue.path.split('.');
-    if (head !== undefined && FIELDS.includes(head)) {
-      errors[head as ExerciseFormField] = true;
-    }
-  }
-  return errors;
+    const field = head === undefined ? undefined : FIELD_OF_ISSUE[head];
+    return field === undefined ? [] : [field];
+  });
+  return [...new Set(fields)];
 }

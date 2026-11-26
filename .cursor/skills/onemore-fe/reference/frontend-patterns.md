@@ -6,7 +6,8 @@ Read when creating or changing features, components, state, forms, i18n, units, 
 ```
 public/exercises/        WebP images from free-exercise-db
 src/app/                 router, providers, root layout
-src/features/<feature>/  auth, onboarding, profile, exercises, workouts, calendar, nutrition
+src/features/<feature>/  auth, account, exercises, templates, workouts (pages and feature-only logic)
+src/entities/<entity>/   user, exercise, training (api hooks, domain model, components shared by features)
 src/shared/ui/           shadcn/ui primitives
 src/shared/api/          API client, error type
 src/shared/i18n/         i18next setup, locale JSON files
@@ -25,13 +26,13 @@ features/workouts/
   model/        Zod form schemas, pure feature logic, store (workout draft)
   index.ts      the only public entry for other features and app/
 ```
-Import direction `app -> features -> shared`. Use the `@/` alias for `src/`.
+Import direction `app -> features -> entities -> shared` (ESLint enforces it). Whole-app flow tests live in `src/app/flows/`. Reuse before writing: `shared/ui` has `ConfirmSheet`, `SheetActions`, `ActionList`, `ErrorState`, `NotFoundState`; `shared/lib` has `list` (mapById, moveById), `use-sheet`, `uuid`; `shared/api` has `parseResponse`, `apiErrorKey`, `hasErrorCode`. Use the `@/` alias for `src/`.
 
 ## State: where does it live?
 | Data | Place |
 |---|---|
 | Anything from the API | TanStack Query cache only |
-| In-progress workout draft | Zustand `persist` store in `features/workouts/model` |
+| In-progress workout draft | Zustand `persist` store in `entities/training/model` |
 | Form input | React Hook Form |
 | URL-worthy state (selected date, month, tab, search) | router search params |
 | Ephemeral UI (open dialog) | local `useState` |

@@ -18,7 +18,8 @@ import type {
   PickedExercise,
   SetKind,
   SetValueKey,
-} from '@/features/workouts/model/draft';
+} from '@/entities/training/model/draft';
+import { newId } from '@/shared/lib/uuid';
 
 export const EDITOR_STORAGE_KEY = 'onemore.template-editor';
 
@@ -26,8 +27,6 @@ const persistedSchema = z.object({
   ownerId: z.string().nullable(),
   editor: editorSchema.nullable(),
 });
-
-const newId = (): string => crypto.randomUUID();
 
 export interface EditorState {
   ownerId: string | null;

@@ -1,4 +1,4 @@
-import type { Units } from '@/features/auth/api/current-user.service';
+import type { Units } from '@/entities/user/api/current-user.service';
 import type {
   TemplateExercisePayload,
   TemplatePayload,
@@ -10,8 +10,8 @@ import {
   type DraftExercise,
   type DraftSet,
   type SetValueKey,
-} from '@/features/workouts/model/draft';
-import { previousValues } from '@/features/workouts/model/previous';
+} from '@/entities/training/model/draft';
+import { previousValues } from '@/entities/training/model/previous';
 
 export type TemplateChange =
   | { kind: 'added'; name: string }

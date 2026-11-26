@@ -22,3 +22,15 @@ export class ApiError extends Error {
 export function isApiError(error: unknown): error is ApiError {
   return error instanceof ApiError;
 }
+
+export function hasErrorCode(error: unknown, code: string): boolean {
+  return isApiError(error) && error.code === code;
+}
+
+export function apiErrorKey<K extends string>(
+  error: unknown,
+  keys: Readonly<Record<string, K>>,
+  fallback: K,
+): K {
+  return isApiError(error) ? (keys[error.code] ?? fallback) : fallback;
+}

@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useExerciseCount } from '@/features/exercises/api/use-exercises';
+import { useExerciseCount } from '@/entities/exercise/api/use-exercises';
 import { FilterCard } from '@/features/exercises/components/FilterCard';
 import { FilterThumb } from '@/features/exercises/components/FilterThumb';
-import type { CatalogFilters } from '@/features/exercises/model/catalog-search';
+import type { CatalogFilters } from '@/entities/exercise/model/catalog-search';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
-import { Button } from '@/shared/ui/button';
+import { SheetActions } from '@/shared/ui/sheet-actions';
 
 export type FilterField = 'muscle' | 'equipment';
 
@@ -60,30 +60,25 @@ function FilterSheet({
       onOpenChange={onOpenChange}
       title={title}
       footer={
-        <>
-          <Button
-            type="button"
-            variant="secondary"
-            className="shrink-0 px-3 text-sm"
-            onClick={() => {
+        <SheetActions
+          auxiliary
+          secondary={{
+            label: t('catalog.clearFilters'),
+            onClick: () => {
               setDraft([]);
-            }}
-          >
-            {t('catalog.clearFilters')}
-          </Button>
-          <Button
-            type="button"
-            className="min-w-0 flex-1 px-3 text-sm"
-            disabled={total === 0}
-            onClick={() => {
+            },
+          }}
+          primary={{
+            label:
+              total === undefined
+                ? t('catalog.show')
+                : t('catalog.showResults', { count: total }),
+            disabled: total === 0,
+            onClick: () => {
               onApply(draft);
-            }}
-          >
-            {total === undefined
-              ? t('catalog.show')
-              : t('catalog.showResults', { count: total })}
-          </Button>
-        </>
+            },
+          }}
+        />
       }
     >
       <div className="flex flex-col gap-4">

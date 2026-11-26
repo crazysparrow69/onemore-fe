@@ -2,8 +2,8 @@ import { getRouteApi, Link, useRouter } from '@tanstack/react-router';
 import { ArrowLeft, Ellipsis } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useCurrentUser } from '@/features/auth/api/use-auth';
-import { ExerciseThumb } from '@/features/exercises/components/ExerciseRow';
+import { useCurrentUser } from '@/entities/user/api/use-auth';
+import { ExerciseThumb } from '@/entities/exercise/components/ExerciseRow';
 import { useTemplate } from '@/features/templates/api/use-templates';
 import { StartDraftSheet } from '@/features/templates/components/StartDraftSheet';
 import { useStartProgram } from '@/features/templates/model/use-start-program';
@@ -13,10 +13,11 @@ import {
   setLabel,
   setMark,
   workingNumbers,
-} from '@/features/workouts/model/display';
-import { formatClock } from '@/features/workouts/model/format';
-import { isApiError } from '@/shared/api/error';
+} from '@/entities/training/model/display';
+import { formatClock } from '@/entities/training/model/format';
+import { hasErrorCode } from '@/shared/api/error';
 import { Button } from '@/shared/ui/button';
+import { ErrorState, NotFoundState } from '@/shared/ui/error-state';
 import { IconButton } from '@/shared/ui/icon-button';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
@@ -33,8 +34,7 @@ function TemplatePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const units = user.data?.units ?? 'kg';
   const data = template.data;
-  const notFound =
-    isApiError(template.error) && template.error.code === 'TEMPLATE_NOT_FOUND';
+  const notFound = hasErrorCode(template.error, 'TEMPLATE_NOT_FOUND');
 
   function goBack() {
     void router.navigate({ to: '/training', replace: true });
@@ -71,28 +71,21 @@ function TemplatePage() {
       ) : null}
 
       {template.isError ? (
-        <div className="flex flex-col items-start gap-3 px-4 py-4">
-          <Text tone={notFound ? 'muted' : 'danger'}>
-            {notFound
-              ? t('templates.notFound')
-              : t('errors.generic.description')}
-          </Text>
-          {notFound ? (
-            <Button asChild variant="secondary">
-              <Link to="/training">{t('templates.toTraining')}</Link>
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                void template.refetch();
-              }}
-            >
-              {t('common.retry')}
-            </Button>
-          )}
-        </div>
+        notFound ? (
+          <NotFoundState
+            className="px-4 py-4"
+            message={t('templates.notFound')}
+          >
+            <Link to="/training">{t('templates.toTraining')}</Link>
+          </NotFoundState>
+        ) : (
+          <ErrorState
+            className="px-4 py-4"
+            onRetry={() => {
+              void template.refetch();
+            }}
+          />
+        )
       ) : null}
 
       {data ? (

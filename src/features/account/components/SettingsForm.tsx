@@ -10,8 +10,8 @@ import { timeZoneOptions } from '@/features/account/model/time-zones';
 import type {
   CurrentUser,
   UserPatch,
-} from '@/features/auth/api/current-user.service';
-import { fieldError } from '@/features/auth/components/field-error';
+} from '@/entities/user/api/current-user.service';
+import { fieldError } from '@/shared/lib/field-error';
 import { LANGUAGE_NAMES, LANGUAGES } from '@/shared/i18n/language';
 import { toast } from '@/shared/lib/toast';
 import { Button } from '@/shared/ui/button';

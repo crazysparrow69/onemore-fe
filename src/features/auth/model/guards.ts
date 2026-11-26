@@ -1,5 +1,5 @@
 import { redirect } from '@tanstack/react-router';
-import { getSession } from '@/features/auth/api/auth.service';
+import { getSession } from '@/entities/user/api/auth.service';
 
 export async function requireUser(): Promise<void> {
   const session = await getSession();
