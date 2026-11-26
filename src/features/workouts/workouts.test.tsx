@@ -191,11 +191,11 @@ describe('workouts', () => {
     vi.clearAllMocks();
   });
 
-  it('logs a workout from the home screen to the saved card', async () => {
-    const history = await renderAt('/');
+  it('logs a workout from the training tab to the saved card', async () => {
+    const history = await renderAt('/training');
 
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Start workout' }),
+      await screen.findByRole('button', { name: 'Start empty workout' }),
     );
     await waitFor(() => {
       expect(history.location.pathname).toBe('/workout');
@@ -249,9 +249,9 @@ describe('workouts', () => {
 
   it('keeps the draft when saving fails', async () => {
     vi.mocked(saveWorkout).mockRejectedValue(new Error('offline'));
-    const history = await renderAt('/');
+    const history = await renderAt('/training');
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Start workout' }),
+      await screen.findByRole('button', { name: 'Start empty workout' }),
     );
     await screen.findByRole('link', { name: 'Add exercise' });
     useDraftStore.getState().addExercises([
@@ -283,7 +283,7 @@ describe('workouts', () => {
   });
 
   it('shows an empty history', async () => {
-    await renderAt('/workouts');
+    await renderAt('/profile');
     expect(await screen.findByText('No workouts yet')).toBeTruthy();
   });
 
@@ -305,9 +305,56 @@ describe('workouts', () => {
       total: 1,
       nextOffset: null,
     });
-    await renderAt('/workouts');
+    await renderAt('/profile');
     expect(await screen.findByText('Evening workout')).toBeTruthy();
     expect(screen.getByText(/Bench press/)).toBeTruthy();
+  });
+
+  it('continues the draft from the training tab', async () => {
+    useDraftStore.getState().start(user.id);
+    await renderAt('/training');
+    expect(
+      await screen.findByRole('button', { name: 'Continue workout' }),
+    ).toBeTruthy();
+  });
+
+  it('shows the last workout on home', async () => {
+    vi.mocked(fetchWorkouts).mockResolvedValue({
+      items: [
+        {
+          ...saved,
+          exercises: [
+            {
+              exerciseId: bench.id,
+              name: 'Bench press',
+              image: null,
+              setCount: 1,
+            },
+          ],
+        },
+      ],
+      total: 1,
+      nextOffset: null,
+    });
+    await renderAt('/');
+    expect(await screen.findByText('Last workout')).toBeTruthy();
+    expect(await screen.findByText('Evening workout')).toBeTruthy();
+  });
+
+  it('points to the training tab when there is no workout yet', async () => {
+    await renderAt('/');
+    expect(await screen.findByText('No workouts yet')).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'Go to Training' }).getAttribute('href'),
+    ).toBe('/training');
+  });
+
+  it('shows the user data and the exercises link on the profile', async () => {
+    await renderAt('/profile');
+    expect(await screen.findByText('Ada')).toBeTruthy();
+    expect(
+      screen.getByRole('link', { name: 'Exercises' }).getAttribute('href'),
+    ).toBe('/exercises');
   });
 
   it('deletes a workout from its card', async () => {
@@ -323,7 +370,7 @@ describe('workouts', () => {
       expect(deleteWorkout).toHaveBeenCalledWith(saved.id);
     });
     await waitFor(() => {
-      expect(history.location.pathname).toBe('/workouts');
+      expect(history.location.pathname).toBe('/profile');
     });
   });
 
@@ -337,9 +384,9 @@ describe('workouts', () => {
 
   it('does not show a draft of another account', async () => {
     useDraftStore.getState().start('someone-else');
-    await renderAt('/');
+    await renderAt('/training');
     expect(
-      await screen.findByRole('button', { name: 'Start workout' }),
+      await screen.findByRole('button', { name: 'Start empty workout' }),
     ).toBeTruthy();
     expect(
       screen.queryByRole('link', { name: /Workout in progress/ }),

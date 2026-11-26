@@ -45,6 +45,16 @@ const profileRoute = createRoute({
   ),
 });
 
+const profileEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profile/edit',
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/account'),
+    'ProfileEditPage',
+  ),
+});
+
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings',
@@ -128,13 +138,13 @@ const workoutFinishRoute = createRoute({
   ),
 });
 
-const workoutsRoute = createRoute({
+const trainingRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/workouts',
+  path: '/training',
   beforeLoad: () => requireUser(),
   component: lazyRouteComponent(
     () => import('@/features/workouts'),
-    'WorkoutHistoryPage',
+    'TrainingPage',
   ),
 });
 
@@ -171,7 +181,9 @@ const callbackRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  trainingRoute,
   profileRoute,
+  profileEditRoute,
   settingsRoute,
   exercisesRoute,
   exerciseNewRoute,
@@ -180,7 +192,6 @@ const routeTree = rootRoute.addChildren([
   workoutRoute,
   workoutAddRoute,
   workoutFinishRoute,
-  workoutsRoute,
   workoutDetailsRoute,
   signInRoute,
   signUpRoute,

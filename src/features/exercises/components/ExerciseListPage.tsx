@@ -140,7 +140,7 @@ function ExerciseCatalog({
       <header className="sticky top-0 z-10 flex flex-col gap-3 bg-background px-4 pt-4 pb-3">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center">
           <Link
-            to={pick ? pick.backTo : '/'}
+            to={pick ? pick.backTo : '/profile'}
             aria-label={t('common.back')}
             className="inline-flex size-10 items-center justify-center rounded-full bg-secondary outline-none hover:bg-secondary/80 focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >

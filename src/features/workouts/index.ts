@@ -2,4 +2,4 @@ export { ActiveWorkoutPage } from '@/features/workouts/components/ActiveWorkoutP
 export { ExercisePickerPage } from '@/features/workouts/components/ExercisePickerPage';
 export { FinishWorkoutPage } from '@/features/workouts/components/FinishWorkoutPage';
 export { WorkoutDetailsPage } from '@/features/workouts/components/WorkoutDetailsPage';
-export { WorkoutHistoryPage } from '@/features/workouts/components/WorkoutHistoryPage';
+export { TrainingPage } from '@/features/workouts/components/TrainingPage';

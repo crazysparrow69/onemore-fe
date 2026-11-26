@@ -20,7 +20,7 @@ function AccountScreen({
     <main className="flex flex-1 flex-col gap-6 px-6 pt-6 pb-8">
       <div className="flex items-center gap-3">
         <Link
-          to="/"
+          to="/profile"
           aria-label={t('common.back')}
           className="-ml-2 inline-flex size-10 items-center justify-center rounded-md hover:bg-accent"
         >

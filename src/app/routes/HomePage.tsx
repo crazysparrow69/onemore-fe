@@ -1,79 +1,66 @@
-import { Link, useRouter } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import { useTranslation } from 'react-i18next';
-import { initials } from '@/features/account/model/initials';
-import { useCurrentUser, useSignOut } from '@/features/auth/api/use-auth';
-import {
-  useDraftStore,
-  useWorkoutDraft,
-} from '@/features/workouts/model/draft-store';
-import { Avatar } from '@/shared/ui/avatar';
+import { useCurrentUser } from '@/features/auth/api/use-auth';
+import { useWorkoutList } from '@/features/workouts/api/use-workouts';
+import { WorkoutCard } from '@/features/workouts/components/WorkoutCard';
 import { Button } from '@/shared/ui/button';
+import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
 
 export function HomePage() {
   const { t } = useTranslation();
   const user = useCurrentUser();
-  const signOut = useSignOut();
-  const router = useRouter();
-  const draft = useWorkoutDraft(user.data?.id);
-  const startDraft = useDraftStore((state) => state.start);
+  const list = useWorkoutList();
+  const last = list.data?.pages[0]?.items[0];
 
   return (
-    <main className="flex flex-1 flex-col justify-center gap-4 px-4">
+    <main className="flex flex-1 flex-col gap-6 px-4 pt-4 pb-8">
       <Text as="h1" size="2xl" weight="semibold">
-        {t('home.title')}
+        {user.data?.name
+          ? t('home.greeting', { name: user.data.name })
+          : t('home.title')}
       </Text>
-      <Text tone="muted">{t('home.subtitle')}</Text>
-      {user.isPending ? <Text tone="muted">{t('common.loading')}</Text> : null}
-      {user.isError ? (
-        <Text tone="danger">{t('errors.generic.description')}</Text>
-      ) : null}
-      {user.data ? (
-        <Link to="/profile" className="flex items-center gap-3 self-start">
-          <Avatar initials={initials(user.data)} />
-          <span className="flex flex-col">
-            <Text weight="medium">{user.data.name ?? user.data.email}</Text>
-            {user.data.nickname ? (
+
+      <section className="flex flex-col gap-3">
+        <Text as="h2" size="lg" weight="semibold">
+          {t('home.lastWorkout')}
+        </Text>
+
+        {list.isPending ? (
+          <Skeleton className="h-40 w-full rounded-xl" aria-hidden />
+        ) : null}
+
+        {list.isError ? (
+          <div className="flex flex-col items-start gap-3">
+            <Text tone="danger">{t('errors.generic.description')}</Text>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                void list.refetch();
+              }}
+            >
+              {t('common.retry')}
+            </Button>
+          </div>
+        ) : null}
+
+        {last ? <WorkoutCard workout={last} /> : null}
+
+        {list.data && !last ? (
+          <div className="flex flex-col items-start gap-3 rounded-xl bg-card p-4">
+            <div className="flex flex-col gap-1">
+              <Text weight="medium">{t('home.emptyTitle')}</Text>
               <Text size="sm" tone="muted">
-                @{user.data.nickname}
+                {t('home.emptyHint')}
               </Text>
-            ) : null}
-          </span>
-        </Link>
-      ) : null}
-      {user.data ? (
-        <Button
-          type="button"
-          className="self-start"
-          onClick={() => {
-            if (!draft) {
-              startDraft(user.data.id);
-            }
-            void router.navigate({ to: '/workout' });
-          }}
-        >
-          {draft ? t('home.continueWorkout') : t('home.startWorkout')}
-        </Button>
-      ) : null}
-      <Link to="/workouts" className="self-start text-primary">
-        {t('home.history')}
-      </Link>
-      <Button asChild className="self-start">
-        <Link to="/exercises">{t('home.exercises')}</Link>
-      </Button>
-      <Link to="/settings" className="self-start text-primary">
-        {t('home.settings')}
-      </Link>
-      <Button
-        type="button"
-        className="self-start"
-        loading={signOut.isPending}
-        onClick={() => {
-          signOut.mutate();
-        }}
-      >
-        {t('home.signOut')}
-      </Button>
+            </div>
+            <Button asChild>
+              <Link to="/training">{t('home.toTraining')}</Link>
+            </Button>
+          </div>
+        ) : null}
+      </section>
     </main>
   );
 }

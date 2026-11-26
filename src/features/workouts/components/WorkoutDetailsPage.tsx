@@ -46,7 +46,7 @@ function WorkoutDetailsPage() {
       onSuccess: () => {
         setMenu(null);
         toast.success(t('workout.deleted'));
-        void router.navigate({ to: '/workouts', replace: true });
+        void router.navigate({ to: '/profile', replace: true });
       },
       onError: () => {
         toast.error(t('errors.generic.description'));
@@ -58,7 +58,7 @@ function WorkoutDetailsPage() {
     if (router.history.canGoBack()) {
       router.history.back();
     } else {
-      void router.navigate({ to: '/workouts' });
+      void router.navigate({ to: '/profile' });
     }
   }
 
@@ -95,7 +95,7 @@ function WorkoutDetailsPage() {
           </Text>
           {notFound ? (
             <Button asChild variant="secondary">
-              <Link to="/workouts">{t('workout.toHistory')}</Link>
+              <Link to="/profile">{t('workout.toHistory')}</Link>
             </Button>
           ) : (
             <Button

@@ -11,12 +11,8 @@ import { useNow } from '@/features/workouts/model/use-now';
 const HIDDEN_PREFIXES = ['/workout', '/sign-in', '/sign-up', '/auth'] as const;
 
 function hidden(pathname: string): boolean {
-  return (
-    (pathname === '/workouts' ||
-      HIDDEN_PREFIXES.some(
-        (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-      )) &&
-    !pathname.startsWith('/workouts/')
+  return HIDDEN_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
   );
 }
 
@@ -38,19 +34,16 @@ function ActiveWorkoutBar() {
   const elapsed = (now - new Date(draft.startedAt).getTime()) / 1000;
 
   return (
-    <>
-      <div className="h-16 shrink-0" aria-hidden />
-      <Link
-        to="/workout"
-        className="fixed inset-x-0 bottom-0 z-30 mx-auto flex w-full max-w-md items-center justify-between rounded-t-2xl bg-primary px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] text-primary-foreground outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-      >
-        <span className="font-semibold">{t('workout.bar')}</span>
-        <span className="flex items-center gap-2 tabular-nums">
-          {formatClock(elapsed)}
-          <ChevronUp className="size-5" aria-hidden />
-        </span>
-      </Link>
-    </>
+    <Link
+      to="/workout"
+      className="pointer-events-auto flex items-center justify-between rounded-2xl bg-primary px-5 py-3 text-primary-foreground shadow-[inset_0_1px_0_rgb(255_255_255/0.25),0_12px_32px_-8px_rgb(0_0_0/0.7)] outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+    >
+      <span className="font-semibold">{t('workout.bar')}</span>
+      <span className="flex items-center gap-2 tabular-nums">
+        {formatClock(elapsed)}
+        <ChevronUp className="size-5" aria-hidden />
+      </span>
+    </Link>
   );
 }
 

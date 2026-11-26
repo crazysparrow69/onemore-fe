@@ -3,15 +3,26 @@
     "name": "onemore"
   },
   "home": {
-    "title": "onemore",
-    "subtitle": "Workout and nutrition diary",
-    "signOut": "Sign out",
-    "profile": "Profile",
-    "exercises": "Exercises",
-    "settings": "Settings",
-    "startWorkout": "Start workout",
-    "continueWorkout": "Continue workout",
-    "history": "History"
+    "title": "Home",
+    "greeting": "Hi, {{name}}",
+    "lastWorkout": "Last workout",
+    "emptyTitle": "No workouts yet",
+    "emptyHint": "Start your first workout in the Training tab.",
+    "toTraining": "Go to Training"
+  },
+  "nav": {
+    "label": "Main menu",
+    "home": "Home",
+    "training": "Training",
+    "profile": "Profile"
+  },
+  "training": {
+    "title": "Training",
+    "start": "Start empty workout",
+    "continue": "Continue workout",
+    "programs": "Programs",
+    "programsEmpty": "No programs yet",
+    "programsEmptyHint": "Workout templates will appear here."
   },
   "auth": {
     "or": "or",
@@ -93,7 +104,12 @@
     "nicknameHint": "Latin letters, digits and _, 3-20 characters. Friends will find you by it.",
     "email": "Email",
     "save": "Save",
-    "saved": "Profile saved"
+    "saved": "Profile saved",
+    "editTitle": "Edit profile",
+    "edit": "Edit profile",
+    "workoutsCount": "Workouts",
+    "exercises": "Exercises",
+    "history": "Workout history"
   },
   "settings": {
     "title": "Settings",
@@ -103,7 +119,8 @@
     "unitsLb": "lb",
     "timeZone": "Time zone",
     "save": "Save",
-    "saved": "Settings saved"
+    "saved": "Settings saved",
+    "signOut": "Sign out"
   },
   "catalog": {
     "title": "Exercises",
@@ -238,7 +255,6 @@
       "network": "Can't reach the server. The workout is kept on your phone.",
       "generic": "Couldn't save the workout. It is kept on your phone."
     },
-    "historyTitle": "History",
     "historyEmpty": "No workouts yet",
     "historyEmptyHint": "Saved workouts will appear here",
     "detailsMenu": "Workout menu",
