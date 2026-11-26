@@ -21,6 +21,7 @@ import { unlockRestAudio } from '@/shared/lib/rest-signal';
 import { ConfirmSheet } from '@/shared/ui/confirm-sheet';
 import { Button } from '@/shared/ui/button';
 import { IconButton } from '@/shared/ui/icon-button';
+import { Stat } from '@/shared/ui/stat';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
 
@@ -108,28 +109,27 @@ function ActiveWorkoutPage() {
           >
             <Timer aria-hidden />
             {rest ? (
-              <span className="text-sm font-medium tabular-nums">
+              <Text as="span" size="sm" weight="medium" numeric>
                 {formatClock(restLeftSeconds(rest, now))}
-              </span>
+              </Text>
             ) : null}
           </IconButton>
           <Button asChild size="sm" className="rounded-full px-4">
             <Link to="/workout/finish">{t('workout.finish')}</Link>
           </Button>
         </div>
-        <dl className="grid grid-cols-2 border-b border-border px-4 pb-3 text-sm">
-          <div>
-            <dt className="text-muted-foreground">{t('workout.time')}</dt>
-            <dd className="text-lg font-medium text-primary tabular-nums">
-              {formatClock(elapsed)}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">{t('workout.sets')}</dt>
-            <dd className="text-lg font-medium tabular-nums">
-              {completedSetCount(draft)}
-            </dd>
-          </div>
+        <dl className="grid grid-cols-2 border-b border-border px-4 pb-3">
+          <Stat
+            label={t('workout.time')}
+            valueSize="lg"
+            valueTone="accent"
+            numeric
+          >
+            {formatClock(elapsed)}
+          </Stat>
+          <Stat label={t('workout.sets')} valueSize="lg" numeric>
+            {completedSetCount(draft)}
+          </Stat>
         </dl>
       </header>
 

@@ -20,10 +20,12 @@ import {
 import { hasErrorCode } from '@/shared/api/error';
 import { toast } from '@/shared/lib/toast';
 import { ActionItem, ActionList } from '@/shared/ui/action-list';
+import { Badge } from '@/shared/ui/badge';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import { ConfirmSheet } from '@/shared/ui/confirm-sheet';
 import { ErrorState, NotFoundState } from '@/shared/ui/error-state';
 import { IconButton } from '@/shared/ui/icon-button';
+import { Stat } from '@/shared/ui/stat';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
 import { useSheet } from '@/shared/lib/use-sheet';
@@ -120,29 +122,16 @@ function WorkoutDetailsPage() {
             ) : null}
           </div>
 
-          <dl className="mt-4 grid grid-cols-3 gap-3 border-y border-border px-4 py-3 text-sm">
-            <div>
-              <dt className="text-muted-foreground">
-                {t('workout.totalDuration')}
-              </dt>
-              <dd className="text-base font-medium">
-                {durationLabel(data.summary.durationS, t)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">
-                {t('workout.totalVolume')}
-              </dt>
-              <dd className="text-base font-medium">
-                {volumeLabel(data.summary.volumeKg, units, i18n.language, t)}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">
-                {t('workout.totalSets')}
-              </dt>
-              <dd className="text-base font-medium">{data.summary.setCount}</dd>
-            </div>
+          <dl className="mt-4 grid grid-cols-3 gap-3 border-y border-border px-4 py-3">
+            <Stat label={t('workout.totalDuration')} valueSize="md">
+              {durationLabel(data.summary.durationS, t)}
+            </Stat>
+            <Stat label={t('workout.totalVolume')} valueSize="md">
+              {volumeLabel(data.summary.volumeKg, units, i18n.language, t)}
+            </Stat>
+            <Stat label={t('workout.totalSets')} valueSize="md">
+              {data.summary.setCount}
+            </Stat>
           </dl>
 
           <div className="flex flex-col divide-y divide-border">
@@ -179,12 +168,12 @@ function WorkoutDetailsPage() {
                         key={index}
                         className="flex items-center gap-3 text-base"
                       >
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-sm font-semibold">
+                        <Badge shape="square">
                           {setMark(set.kind, numbers[index] ?? 0, t)}
-                        </span>
-                        <span className="tabular-nums">
+                        </Badge>
+                        <Text as="span" numeric>
                           {setLabel(set, { units, language: i18n.language, t })}
-                        </span>
+                        </Text>
                       </li>
                     ))}
                   </ol>

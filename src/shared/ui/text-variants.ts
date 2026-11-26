@@ -9,12 +9,17 @@ export const textVariants = cva('', {
       lg: 'text-lg',
       xl: 'text-xl',
       '2xl': 'text-2xl',
+      '3xl': 'text-3xl',
     },
     tone: {
       default: 'text-foreground',
       muted: 'text-muted-foreground',
       accent: 'text-primary',
       danger: 'text-destructive',
+    },
+    numeric: {
+      true: 'tabular-nums',
+      false: '',
     },
     weight: {
       regular: 'font-normal',
@@ -26,6 +31,7 @@ export const textVariants = cva('', {
     size: 'md',
     tone: 'default',
     weight: 'regular',
+    numeric: false,
   },
 });
 

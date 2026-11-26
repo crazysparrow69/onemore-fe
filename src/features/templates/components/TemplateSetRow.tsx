@@ -12,7 +12,8 @@ import {
   FIELD_KEYS,
   type SetValueKey,
 } from '@/entities/training/model/draft';
-import { cn } from '@/shared/lib/utils';
+import { SetKindButton } from '@/entities/training/components/SetKindButton';
+import { Input } from '@/shared/ui/input';
 
 const INPUT_MODES: Readonly<
   Record<SetValueKey, 'decimal' | 'numeric' | 'text'>
@@ -47,24 +48,18 @@ function TemplateSetRow({
       className="grid items-center gap-2 py-1"
       style={{ gridTemplateColumns: setGridTemplate(exercise.fields.length) }}
     >
-      <button
-        type="button"
-        aria-label={t('workout.setMenu', { number: index + 1 })}
+      <SetKindButton
+        kind={set.kind}
+        mark={setMark(set.kind, number, t)}
+        label={t('workout.setMenu', { number: index + 1 })}
         onClick={onKind}
-        className={cn(
-          'flex h-10 items-center justify-center rounded-lg bg-secondary text-base font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-          set.kind === 'warmup' ? 'text-amber-400' : '',
-          set.kind === 'drop' ? 'text-violet-400' : '',
-          set.kind === 'failure' ? 'text-destructive' : '',
-        )}
-      >
-        {setMark(set.kind, number, t)}
-      </button>
+      />
       {exercise.fields.map((rule) => {
         const key = FIELD_KEYS[rule.id];
         return (
-          <input
+          <Input
             key={rule.id}
+            variant="cell"
             value={set[key]}
             inputMode={INPUT_MODES[key]}
             autoComplete="off"
@@ -76,7 +71,6 @@ function TemplateSetRow({
                 onChange(key, next);
               }
             }}
-            className="h-10 min-w-0 rounded-lg bg-secondary px-1 text-center text-base outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
           />
         );
       })}

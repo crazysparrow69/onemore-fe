@@ -7,6 +7,7 @@ export const inputVariants = cva(
       variant: {
         outline:
           'h-11 min-h-11 rounded-md border border-input bg-transparent px-3 py-1 shadow-xs focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+        cell: 'h-10 min-h-10 rounded-lg bg-secondary px-1 text-center focus-visible:ring-[3px] focus-visible:ring-ring/50 md:text-base',
         underline:
           'h-11 min-h-11 rounded-none border-0 border-b border-input bg-transparent px-0 shadow-none focus-visible:border-primary focus-visible:ring-0 aria-invalid:border-destructive',
       },

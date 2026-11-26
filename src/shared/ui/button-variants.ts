@@ -14,11 +14,23 @@ export const buttonVariants = cva(
         ghost:
           'hover:bg-accent hover:text-accent-foreground disabled:text-muted-foreground',
         link: 'text-primary underline-offset-4 hover:underline disabled:text-muted-foreground',
+        success:
+          'bg-emerald-500 text-white hover:bg-emerald-500/90 disabled:bg-muted disabled:text-muted-foreground',
+        card: 'justify-start bg-card text-foreground font-medium hover:bg-card/80 disabled:opacity-60',
+        option:
+          'justify-between bg-secondary text-left font-normal whitespace-normal text-foreground hover:bg-secondary/80 aria-pressed:ring-2 aria-pressed:ring-primary aria-invalid:ring-2 aria-invalid:ring-destructive disabled:opacity-60',
+        row: 'justify-start rounded-none text-left font-normal whitespace-normal text-foreground hover:bg-accent aria-pressed:bg-primary/15',
+        bare: '',
       },
       size: {
         sm: 'h-9 min-h-9 px-3 text-sm',
         md: 'h-11 min-h-11 px-4 text-base',
         lg: 'h-12 min-h-12 px-6 text-base',
+        control: 'h-10 min-h-10 rounded-lg px-3 text-sm',
+        cell: 'h-10 min-h-10 rounded-lg px-0 text-base',
+        chip: 'h-auto rounded-full px-4 py-1.5 text-sm',
+        auto: 'h-auto min-h-0 rounded-xl px-4 py-3 text-base',
+        none: 'rounded-none',
       },
       fullWidth: {
         true: 'w-full',

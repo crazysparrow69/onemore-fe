@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { exerciseImageUrl } from '@/entities/exercise/api/exercises.service';
 import { cn } from '@/shared/lib/utils';
+import { Button } from '@/shared/ui/button';
 
 const FRAME_MS = 1200;
 
@@ -41,11 +42,14 @@ function ExercisePhotos({
 
   return (
     <div className="flex flex-col items-center gap-2 bg-white pb-3 text-black">
-      <button
+      <Button
         type="button"
+        variant="bare"
+        size="none"
+        fullWidth
         aria-label={label}
         aria-pressed={paused}
-        className="block aspect-[4/3] w-full outline-none"
+        className="aspect-[4/3]"
         onClick={() => {
           setPaused((value) => !value);
         }}
@@ -55,13 +59,15 @@ function ExercisePhotos({
           alt=""
           className="size-full object-contain"
         />
-      </button>
+      </Button>
       {count > 1 ? (
         <div className="flex gap-2">
           {keys.map((key, position) => (
-            <button
+            <Button
               key={key}
               type="button"
+              variant="bare"
+              size="none"
               aria-label={`${String(position + 1)} / ${String(count)}`}
               className={cn(
                 'size-2 rounded-full',

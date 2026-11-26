@@ -9,6 +9,7 @@ import { TemplateCard } from '@/features/templates/components/TemplateCard';
 import { TemplateMenu } from '@/features/templates/components/TemplateMenu';
 import { useEditorLaunch } from '@/features/templates/model/use-launch';
 import { Button } from '@/shared/ui/button';
+import { Card } from '@/shared/ui/card';
 import { ErrorState } from '@/shared/ui/error-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
@@ -47,22 +48,23 @@ function ProgramsSection() {
       ) : null}
 
       {templates.isError ? (
-        <ErrorState
-          className="rounded-xl bg-card p-4"
-          message={t('templates.loadError')}
-          onRetry={() => {
-            void templates.refetch();
-          }}
-        />
+        <Card>
+          <ErrorState
+            message={t('templates.loadError')}
+            onRetry={() => {
+              void templates.refetch();
+            }}
+          />
+        </Card>
       ) : null}
 
       {items?.length === 0 ? (
-        <div className="flex flex-col gap-1 rounded-xl bg-card p-4">
+        <Card gap="sm">
           <Text weight="medium">{t('templates.empty')}</Text>
           <Text size="sm" tone="muted">
             {t('templates.emptyHint')}
           </Text>
-        </div>
+        </Card>
       ) : null}
 
       {items && items.length > 0 ? (

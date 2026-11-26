@@ -1,7 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { changeLabel } from '@/features/templates/model/summary';
 import type { TemplateChange } from '@/features/templates/model/update-from-workout';
-import { cn } from '@/shared/lib/utils';
+import { Card } from '@/shared/ui/card';
+import { Switch } from '@/shared/ui/switch';
 import { Text } from '@/shared/ui/text';
 
 const MAX_SHOWN = 5;
@@ -22,34 +23,12 @@ function UpdateProgramToggle({
   const hidden = changes.length - shown.length;
 
   return (
-    <section className="flex flex-col gap-3 rounded-xl bg-card p-4">
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        className="flex w-full items-center justify-between gap-3 text-left outline-none focus-visible:underline"
-        onClick={() => {
-          onChange(!checked);
-        }}
-      >
-        <span className="min-w-0 font-medium">
+    <Card as="section">
+      <Switch checked={checked} onCheckedChange={onChange}>
+        <Text as="span" weight="medium" className="min-w-0">
           {t('templates.update.toggle', { name })}
-        </span>
-        <span
-          aria-hidden
-          className={cn(
-            'relative h-6 w-10 shrink-0 rounded-full transition-colors',
-            checked ? 'bg-primary' : 'bg-secondary',
-          )}
-        >
-          <span
-            className={cn(
-              'absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform',
-              checked ? 'translate-x-4' : '',
-            )}
-          />
-        </span>
-      </button>
+        </Text>
+      </Switch>
       <Text size="sm" tone="muted">
         {t('templates.update.hint')}
       </Text>
@@ -65,7 +44,7 @@ function UpdateProgramToggle({
           ) : null}
         </ul>
       ) : null}
-    </section>
+    </Card>
   );
 }
 

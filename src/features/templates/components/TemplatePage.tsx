@@ -16,6 +16,7 @@ import {
 } from '@/entities/training/model/display';
 import { formatClock } from '@/entities/training/model/format';
 import { hasErrorCode } from '@/shared/api/error';
+import { Badge } from '@/shared/ui/badge';
 import { Button } from '@/shared/ui/button';
 import { ErrorState, NotFoundState } from '@/shared/ui/error-state';
 import { IconButton } from '@/shared/ui/icon-button';
@@ -153,16 +154,16 @@ function TemplatePage() {
                         key={index}
                         className="flex items-center gap-3 text-base"
                       >
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-secondary text-sm font-semibold">
+                        <Badge shape="square">
                           {setMark(set.kind, numbers[index] ?? 0, t)}
-                        </span>
-                        <span className="tabular-nums">
+                        </Badge>
+                        <Text as="span" numeric>
                           {setLabel(set, {
                             units,
                             language: i18n.language,
                             t,
                           }) || t('templates.noValues')}
-                        </span>
+                        </Text>
                       </li>
                     ))}
                   </ol>

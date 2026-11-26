@@ -9,6 +9,18 @@ import tseslint from 'typescript-eslint';
 const LAYER_RULES = `Dependencies point down only: app, features, entities, shared.
 Entities: user, exercise, training. Features: auth, account, exercises, templates, workouts.`;
 
+const RAW_ELEMENTS = {
+  button:
+    'Use Button, IconButton or Switch from shared/ui; add a variant or size instead of a raw <button>.',
+  input: 'Use Input, TextField or SearchField from shared/ui.',
+  textarea: 'Use Textarea from shared/ui.',
+  select: 'Use Select or SelectField from shared/ui.',
+  h1: 'Use Text with as="h1" from shared/ui.',
+  h2: 'Use Text with as="h2" from shared/ui.',
+  h3: 'Use Text with as="h3" from shared/ui.',
+  p: 'Use Text from shared/ui.',
+};
+
 const ENTITY_FORBIDS = {
   user: ['entities/exercise', 'entities/training', 'features', 'app'],
   exercise: ['entities/training', 'features', 'app'],
@@ -111,6 +123,19 @@ export default defineConfig([
       'no-restricted-imports': [
         'error',
         restrictImports(['entities', 'features', 'app']),
+      ],
+    },
+  },
+  {
+    files: ['src/**/*.tsx'],
+    ignores: ['src/shared/ui/**', '**/*.test.tsx'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        ...Object.entries(RAW_ELEMENTS).map(([tag, message]) => ({
+          selector: `JSXOpeningElement[name.name='${tag}']`,
+          message,
+        })),
       ],
     },
   },

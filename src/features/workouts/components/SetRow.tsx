@@ -15,7 +15,10 @@ import {
 } from '@/entities/training/model/columns';
 import { setLabel, setMark } from '@/entities/training/model/display';
 import { matchPrevious } from '@/entities/training/model/previous';
+import { SetKindButton } from '@/entities/training/components/SetKindButton';
 import { cn } from '@/shared/lib/utils';
+import { Button } from '@/shared/ui/button';
+import { Input } from '@/shared/ui/input';
 
 const INPUT_MODES: Readonly<
   Record<SetValueKey, 'decimal' | 'numeric' | 'text'>
@@ -61,35 +64,31 @@ function SetRow({
       )}
       style={{ gridTemplateColumns: columnTemplate(exercise.fields) }}
     >
-      <button
-        type="button"
-        aria-label={t('workout.setMenu', { number: index + 1 })}
+      <SetKindButton
+        kind={set.kind}
+        mark={mark}
+        label={t('workout.setMenu', { number: index + 1 })}
         onClick={onKind}
-        className={cn(
-          'flex h-10 items-center justify-center rounded-lg bg-secondary text-base font-semibold outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-          set.kind === 'warmup' ? 'text-amber-400' : '',
-          set.kind === 'drop' ? 'text-violet-400' : '',
-          set.kind === 'failure' ? 'text-destructive' : '',
-        )}
-      >
-        {mark}
-      </button>
-      <button
+      />
+      <Button
         type="button"
+        variant="bare"
+        size="cell"
         disabled={lastTime === null || done}
         aria-label={t('workout.col.previousSet', { number: index + 1 })}
         onClick={onUsePrevious}
-        className="flex h-10 min-w-0 items-center justify-center truncate rounded-lg px-1 text-center text-xs text-muted-foreground outline-none enabled:active:bg-secondary focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        className="min-w-0 truncate px-1 text-center text-xs text-muted-foreground enabled:active:bg-secondary"
       >
         {lastTime === null
           ? '—'
           : setLabel(lastTime, { units, language: i18n.language, t })}
-      </button>
+      </Button>
       {exercise.fields.map((rule) => {
         const key = FIELD_KEYS[rule.id];
         return (
-          <input
+          <Input
             key={rule.id}
+            variant="cell"
             value={set[key]}
             inputMode={INPUT_MODES[key]}
             autoComplete="off"
@@ -103,28 +102,25 @@ function SetRow({
               }
             }}
             className={cn(
-              'h-10 min-w-0 rounded-lg px-1 text-center text-base outline-none placeholder:text-muted-foreground/60 focus-visible:ring-[3px] focus-visible:ring-ring/50',
-              done ? 'bg-transparent' : 'bg-secondary',
+              'placeholder:text-muted-foreground/60',
+              done ? 'bg-transparent' : '',
             )}
           />
         );
       })}
-      <button
+      <Button
         type="button"
+        variant={done ? 'success' : 'secondary'}
+        size="cell"
         aria-pressed={done}
         aria-label={t(done ? 'workout.uncompleteSet' : 'workout.completeSet', {
           number: index + 1,
         })}
+        className={done ? '' : 'text-muted-foreground'}
         onClick={onToggle}
-        className={cn(
-          'flex h-10 items-center justify-center rounded-lg outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-          done
-            ? 'bg-emerald-500 text-white'
-            : 'bg-secondary text-muted-foreground',
-        )}
       >
         <Check className="size-5" aria-hidden />
-      </button>
+      </Button>
     </li>
   );
 }

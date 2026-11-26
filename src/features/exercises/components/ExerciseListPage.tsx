@@ -24,6 +24,7 @@ import { useDebouncedCallback } from '@/shared/lib/use-debounced-callback';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 import { ErrorState } from '@/shared/ui/error-state';
+import { IconButton } from '@/shared/ui/icon-button';
 import { LoadMore } from '@/shared/ui/load-more';
 import { SearchField } from '@/shared/ui/search-field';
 import { Skeleton } from '@/shared/ui/skeleton';
@@ -142,22 +143,15 @@ function ExerciseCatalog({
       <header className="sticky top-0 z-10 flex flex-col gap-3 bg-background px-4 pt-4 pb-3">
         <div className="grid grid-cols-[1fr_auto_1fr] items-center">
           {pick ? (
-            <button
-              type="button"
-              aria-label={t('common.back')}
-              className="inline-flex size-10 items-center justify-center rounded-full bg-secondary outline-none hover:bg-secondary/80 focus-visible:ring-[3px] focus-visible:ring-ring/50"
-              onClick={pick.onBack}
-            >
-              <ArrowLeft className="size-5" aria-hidden />
-            </button>
+            <IconButton aria-label={t('common.back')} onClick={pick.onBack}>
+              <ArrowLeft aria-hidden />
+            </IconButton>
           ) : (
-            <Link
-              to="/profile"
-              aria-label={t('common.back')}
-              className="inline-flex size-10 items-center justify-center rounded-full bg-secondary outline-none hover:bg-secondary/80 focus-visible:ring-[3px] focus-visible:ring-ring/50"
-            >
-              <ArrowLeft className="size-5" aria-hidden />
-            </Link>
+            <IconButton asChild aria-label={t('common.back')}>
+              <Link to="/profile">
+                <ArrowLeft aria-hidden />
+              </Link>
+            </IconButton>
           )}
           <Text as="h1" size="lg" weight="semibold" className="text-center">
             {pick ? pick.title : t('catalog.title')}
@@ -204,13 +198,12 @@ function ExerciseCatalog({
             </Button>
           ))}
         </div>
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="chip"
           aria-pressed={filters.mine}
-          className={cn(
-            'self-start rounded-full bg-secondary px-4 py-1.5 text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-            filters.mine ? 'text-primary ring-2 ring-primary' : '',
-          )}
+          className="self-start aria-pressed:text-primary aria-pressed:ring-2 aria-pressed:ring-primary"
           onClick={() => {
             onSearchChange((previous) => ({
               ...previous,
@@ -219,7 +212,7 @@ function ExerciseCatalog({
           }}
         >
           {t('catalog.mine')}
-        </button>
+        </Button>
       </header>
 
       <section

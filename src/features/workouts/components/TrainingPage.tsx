@@ -7,6 +7,7 @@ import {
   useDraftStore,
   useWorkoutDraft,
 } from '@/entities/training/model/draft-store';
+import { Button } from '@/shared/ui/button';
 import { Text } from '@/shared/ui/text';
 
 function TrainingPage() {
@@ -29,19 +30,21 @@ function TrainingPage() {
         {t('training.title')}
       </Text>
 
-      <button
+      <Button
         type="button"
+        variant="card"
+        size="auto"
         disabled={!user.data}
-        className="flex items-center gap-3 rounded-xl bg-card px-4 py-4 text-left font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-60"
+        leftIcon={<Plus className="size-6" aria-hidden />}
+        className="gap-3 py-4"
         onClick={() => {
           if (user.data) {
             start(user.data.id);
           }
         }}
       >
-        <Plus className="size-6" aria-hidden />
         {draft ? t('training.continue') : t('training.start')}
-      </button>
+      </Button>
 
       <ProgramsSection />
     </main>

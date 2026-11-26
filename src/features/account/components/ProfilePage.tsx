@@ -6,6 +6,7 @@ import { useCurrentUser } from '@/entities/user/api/use-auth';
 import { WorkoutHistoryList } from '@/entities/training/components/WorkoutHistoryList';
 import { useWorkoutList } from '@/entities/training/api/use-workouts';
 import { Avatar } from '@/shared/ui/avatar';
+import { Button } from '@/shared/ui/button';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
 
@@ -70,13 +71,17 @@ function ProfilePage() {
         </div>
       ) : null}
 
-      <Link
-        to="/exercises"
-        className="flex items-center gap-3 rounded-xl bg-card px-4 py-4 font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+      <Button
+        asChild
+        variant="card"
+        size="auto"
+        className="justify-start gap-3 py-4"
       >
-        <Dumbbell className="size-6" aria-hidden />
-        {t('profile.exercises')}
-      </Link>
+        <Link to="/exercises">
+          <Dumbbell className="size-6" aria-hidden />
+          {t('profile.exercises')}
+        </Link>
+      </Button>
 
       <section className="flex flex-col gap-3">
         <Text as="h2" size="lg" weight="semibold">

@@ -1,6 +1,7 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/button';
+import { Text } from '@/shared/ui/text';
 
 export function UpdatePrompt() {
   const {
@@ -19,7 +20,7 @@ export function UpdatePrompt() {
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-card pb-[env(safe-area-inset-bottom)]"
     >
       <div className="flex flex-col gap-3 px-4 py-3">
-        <p>{t('pwa.update.message')}</p>
+        <Text>{t('pwa.update.message')}</Text>
         <div className="flex gap-2">
           <Button
             type="button"

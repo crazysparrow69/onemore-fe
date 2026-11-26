@@ -4,6 +4,7 @@ import { useCurrentUser } from '@/entities/user/api/use-auth';
 import { useWorkoutList } from '@/entities/training/api/use-workouts';
 import { WorkoutCard } from '@/entities/training/components/WorkoutCard';
 import { Button } from '@/shared/ui/button';
+import { Card } from '@/shared/ui/card';
 import { ErrorState } from '@/shared/ui/error-state';
 import { Skeleton } from '@/shared/ui/skeleton';
 import { Text } from '@/shared/ui/text';
@@ -42,7 +43,7 @@ export function HomePage() {
         {last ? <WorkoutCard workout={last} /> : null}
 
         {list.data && !last ? (
-          <div className="flex flex-col items-start gap-3 rounded-xl bg-card p-4">
+          <Card className="items-start">
             <div className="flex flex-col gap-1">
               <Text weight="medium">{t('home.emptyTitle')}</Text>
               <Text size="sm" tone="muted">
@@ -52,7 +53,7 @@ export function HomePage() {
             <Button asChild>
               <Link to="/training">{t('home.toTraining')}</Link>
             </Button>
-          </div>
+          </Card>
         ) : null}
       </section>
     </main>

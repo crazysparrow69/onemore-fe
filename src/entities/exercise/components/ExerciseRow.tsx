@@ -8,6 +8,8 @@ import {
 import { ExercisePlaceholder } from '@/entities/exercise/components/ExercisePlaceholder';
 import type { ExerciseLabels } from '@/entities/exercise/model/labels';
 import { cn } from '@/shared/lib/utils';
+import { Button } from '@/shared/ui/button';
+import { Text } from '@/shared/ui/text';
 
 function ExerciseThumb({
   image,
@@ -59,12 +61,14 @@ function ExerciseRow({
     <>
       <ExerciseThumb image={exercise.image} seed={exercise.id} />
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-base font-medium">{exercise.name}</span>
-        <span className="truncate text-sm text-muted-foreground">
+        <Text as="span" weight="medium" className="truncate">
+          {exercise.name}
+        </Text>
+        <Text as="span" size="sm" tone="muted" className="truncate">
           {exercise.custom
             ? `${t('catalog.customLabel')} · ${muscles}`
             : muscles}
-        </span>
+        </Text>
       </span>
     </>
   );
@@ -72,14 +76,14 @@ function ExerciseRow({
   return (
     <li className="border-b border-border last:border-b-0">
       {pick ? (
-        <button
+        <Button
           type="button"
+          variant="row"
+          size="none"
+          fullWidth
           aria-pressed={pick.selected}
+          className="gap-3 py-2.5"
           onClick={pick.onToggle}
-          className={cn(
-            'flex w-full items-center gap-3 py-2.5 text-left outline-none focus-visible:bg-accent',
-            pick.selected ? 'bg-primary/15' : '',
-          )}
         >
           {content}
           <span
@@ -93,15 +97,22 @@ function ExerciseRow({
           >
             {pick.selected ? <Check className="size-4" /> : null}
           </span>
-        </button>
+        </Button>
       ) : (
-        <Link
-          to="/exercises/$exerciseId"
-          params={{ exerciseId: exercise.id }}
-          className="flex items-center gap-3 py-2.5 outline-none focus-visible:bg-accent"
+        <Button
+          asChild
+          variant="row"
+          size="none"
+          fullWidth
+          className="gap-3 py-2.5"
         >
-          {content}
-        </Link>
+          <Link
+            to="/exercises/$exerciseId"
+            params={{ exerciseId: exercise.id }}
+          >
+            {content}
+          </Link>
+        </Button>
       )}
     </li>
   );

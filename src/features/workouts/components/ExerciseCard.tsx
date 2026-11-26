@@ -17,6 +17,7 @@ import type {
   SetValueKey,
 } from '@/entities/training/model/draft';
 import { toast } from '@/shared/lib/toast';
+import { Button } from '@/shared/ui/button';
 import { IconButton } from '@/shared/ui/icon-button';
 import { Textarea } from '@/shared/ui/textarea';
 
@@ -72,30 +73,32 @@ function ExerciseCard({
       </header>
 
       <div className="flex flex-wrap items-center gap-2">
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="control"
+          leftIcon={<Timer aria-hidden />}
           onClick={onRest}
-          className="flex h-10 items-center gap-2 rounded-lg bg-secondary px-3 text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
-          <Timer className="size-4" aria-hidden />
           {t('workout.rest.button', {
             value:
               exercise.restSeconds && exercise.restSeconds > 0
                 ? formatClock(exercise.restSeconds)
                 : t('workout.rest.offShort'),
           })}
-        </button>
+        </Button>
         {notesOpen ? null : (
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="control"
+            leftIcon={<FilePlus aria-hidden />}
             onClick={() => {
               setNotesOpen(true);
             }}
-            className="flex h-10 items-center gap-2 rounded-lg bg-secondary px-3 text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
-            <FilePlus className="size-4" aria-hidden />
             {t('workout.note')}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -154,14 +157,15 @@ function ExerciseCard({
         ))}
       </ul>
 
-      <button
+      <Button
         type="button"
+        variant="secondary"
+        fullWidth
+        leftIcon={<Plus aria-hidden />}
         onClick={onAddSet}
-        className="flex h-11 items-center justify-center gap-2 rounded-lg bg-secondary text-base font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
-        <Plus className="size-4" aria-hidden />
         {t('workout.addSet')}
-      </button>
+      </Button>
     </section>
   );
 }

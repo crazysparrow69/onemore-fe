@@ -2,7 +2,7 @@ import { type ReactNode } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { textVariants, type TextVariantProps } from '@/shared/ui/text-variants';
 
-type TextTag = 'p' | 'span' | 'h1' | 'h2' | 'h3' | 'label';
+type TextTag = 'p' | 'span' | 'h1' | 'h2' | 'h3' | 'label' | 'dt' | 'dd';
 
 type TextProps = TextVariantProps & {
   as?: TextTag;
@@ -17,6 +17,7 @@ function Text({
   size,
   tone,
   weight,
+  numeric,
   className,
   children,
   id,
@@ -28,7 +29,7 @@ function Text({
     <Comp
       id={id}
       htmlFor={as === 'label' ? htmlFor : undefined}
-      className={cn(textVariants({ size, tone, weight }), className)}
+      className={cn(textVariants({ size, tone, weight, numeric }), className)}
     >
       {children}
     </Comp>

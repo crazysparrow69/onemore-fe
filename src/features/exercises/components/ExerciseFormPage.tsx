@@ -62,22 +62,26 @@ function SelectRow({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant="option"
+      size="auto"
       aria-invalid={invalid || undefined}
       disabled={disabled}
       onClick={onClick}
-      className="disabled:pointer-events-none disabled:opacity-60 flex items-center justify-between gap-3 rounded-xl bg-secondary px-4 py-3 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:ring-2 aria-invalid:ring-destructive"
+      className="justify-between gap-3"
     >
       <span className="flex min-w-0 flex-col gap-0.5">
-        <span className="text-sm text-muted-foreground">{label}</span>
-        <span
-          className={
-            value.length > 0 ? 'text-base' : 'text-base text-muted-foreground'
-          }
+        <Text as="span" size="sm" tone="muted">
+          {label}
+        </Text>
+        <Text
+          as="span"
+          tone={value.length > 0 ? 'default' : 'muted'}
+          className="font-normal"
         >
           {value.length > 0 ? value : placeholder}
-        </span>
+        </Text>
       </span>
       {disabled ? null : (
         <ChevronRight
@@ -85,7 +89,7 @@ function SelectRow({
           aria-hidden
         />
       )}
-    </button>
+    </Button>
   );
 }
 

@@ -7,6 +7,8 @@ import {
   type Rest,
 } from '@/entities/training/model/rest';
 import { useNow } from '@/entities/training/model/use-now';
+import { Button } from '@/shared/ui/button';
+import { Text } from '@/shared/ui/text';
 
 function RestTimerPanel({
   rest,
@@ -24,8 +26,6 @@ function RestTimerPanel({
     1,
     Math.max(0, (rest.endsAt - now) / (rest.durationS * 1000)),
   );
-  const buttonClass =
-    'flex h-10 min-w-0 items-center justify-center gap-1 rounded-lg bg-secondary px-3 text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50';
 
   return (
     <div
@@ -35,36 +35,43 @@ function RestTimerPanel({
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col">
-          <span className="text-xs text-muted-foreground">
+          <Text as="span" size="xs" tone="muted">
             {t('workout.rest.title')}
-          </span>
-          <span className="text-3xl font-semibold tabular-nums">
+          </Text>
+          <Text as="span" size="3xl" weight="semibold" numeric>
             {formatClock(left)}
-          </span>
+          </Text>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             type="button"
-            className={buttonClass}
+            variant="secondary"
+            size="control"
             onClick={() => {
               onAdjust(-REST_ADJUST_SECONDS);
             }}
           >
             {`−${String(REST_ADJUST_SECONDS)}`}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className={buttonClass}
+            variant="secondary"
+            size="control"
             onClick={() => {
               onAdjust(REST_ADJUST_SECONDS);
             }}
           >
             {`+${String(REST_ADJUST_SECONDS)}`}
-          </button>
-          <button type="button" className={buttonClass} onClick={onSkip}>
-            <SkipForward className="size-4" aria-hidden />
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="control"
+            leftIcon={<SkipForward aria-hidden />}
+            onClick={onSkip}
+          >
             {t('workout.rest.skip')}
-          </button>
+          </Button>
         </div>
       </div>
       <div className="h-1 rounded-full bg-secondary" aria-hidden>

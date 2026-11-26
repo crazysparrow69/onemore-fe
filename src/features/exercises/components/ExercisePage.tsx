@@ -10,6 +10,7 @@ import { useDeleteExercise } from '@/entities/exercise/api/use-exercise-mutation
 import { ExercisePhotos } from '@/entities/exercise/components/ExercisePhotos';
 import { ExercisePlaceholder } from '@/entities/exercise/components/ExercisePlaceholder';
 import { toast } from '@/shared/lib/toast';
+import { Badge } from '@/shared/ui/badge';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import { Button } from '@/shared/ui/button';
 import { ErrorState, NotFoundState } from '@/shared/ui/error-state';
@@ -22,11 +23,7 @@ import { useSheet } from '@/shared/lib/use-sheet';
 const route = getRouteApi('/exercises/$exerciseId');
 
 function Chip({ children }: { children: string }) {
-  return (
-    <span className="rounded-full bg-secondary px-3 py-1 text-sm">
-      {children}
-    </span>
-  );
+  return <Badge>{children}</Badge>;
 }
 
 function ExercisePage() {
@@ -168,10 +165,10 @@ function ExercisePage() {
                 <ol className="flex flex-col gap-3">
                   {data.instructions.map((step, index) => (
                     <li key={index} className="flex gap-3">
-                      <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-sm font-medium">
-                        {index + 1}
-                      </span>
-                      <span className="text-base leading-snug">{step}</span>
+                      <Badge shape="round">{index + 1}</Badge>
+                      <Text as="span" className="leading-snug">
+                        {step}
+                      </Text>
                     </li>
                   ))}
                 </ol>

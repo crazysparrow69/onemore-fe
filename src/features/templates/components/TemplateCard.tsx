@@ -7,6 +7,7 @@ import {
   lastPerformedLabel,
 } from '@/features/templates/model/summary';
 import { Button } from '@/shared/ui/button';
+import { Card } from '@/shared/ui/card';
 import { IconButton } from '@/shared/ui/icon-button';
 import { Text } from '@/shared/ui/text';
 
@@ -25,7 +26,7 @@ function TemplateCard({
   const last = lastPerformedLabel(template, new Date(), i18n.language, t);
 
   return (
-    <li className="flex flex-col gap-3 rounded-xl bg-card p-4">
+    <Card as="li">
       <div className="flex items-start gap-2">
         <Link
           to="/programs/$programId"
@@ -60,7 +61,7 @@ function TemplateCard({
       >
         {t('templates.start')}
       </Button>
-    </li>
+    </Card>
   );
 }
 

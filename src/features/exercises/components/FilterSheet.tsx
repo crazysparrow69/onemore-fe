@@ -6,6 +6,7 @@ import { FilterThumb } from '@/features/exercises/components/FilterThumb';
 import type { CatalogFilters } from '@/entities/exercise/model/catalog-search';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import { SheetActions } from '@/shared/ui/sheet-actions';
+import { Text } from '@/shared/ui/text';
 
 export type FilterField = 'muscle' | 'equipment';
 
@@ -95,9 +96,9 @@ function FilterSheet({
         {sections.map((section) => (
           <section key={section.id} className="flex flex-col gap-2.5">
             {section.label ? (
-              <h3 className="text-sm font-medium text-muted-foreground">
+              <Text as="h3" size="sm" weight="medium" tone="muted">
                 {section.label}
-              </h3>
+              </Text>
             ) : null}
             <div className="grid grid-cols-2 gap-2.5">
               {section.options.map((option) => (

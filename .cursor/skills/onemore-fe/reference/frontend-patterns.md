@@ -26,7 +26,7 @@ features/workouts/
   model/        Zod form schemas, pure feature logic, store (workout draft)
   index.ts      the only public entry for other features and app/
 ```
-Import direction `app -> features -> entities -> shared` (ESLint enforces it). Whole-app flow tests live in `src/app/flows/`. Reuse before writing: `shared/ui` has `ConfirmSheet`, `SheetActions`, `ActionList`, `ErrorState`, `NotFoundState`; `shared/lib` has `list` (mapById, moveById), `use-sheet`, `uuid`; `shared/api` has `parseResponse`, `apiErrorKey`, `hasErrorCode`. Use the `@/` alias for `src/`.
+Import direction `app -> features -> entities -> shared` (ESLint enforces it). Whole-app flow tests live in `src/app/flows/`. Reuse before writing: `shared/ui` has `Card`, `Badge`, `Stat`, `Switch`, `ConfirmSheet`, `SheetActions`, `ActionList`, `ErrorState`, `NotFoundState`; `shared/lib` has `list` (mapById, moveById), `use-sheet`, `uuid`; `shared/api` has `parseResponse`, `apiErrorKey`, `hasErrorCode`. Use the `@/` alias for `src/`.
 
 ## State: where does it live?
 | Data | Place |
@@ -84,6 +84,7 @@ const form = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
 - Mobile-first Tailwind (base styles = phone, `sm:`/`md:` add up). Thumb-reachable primary actions, sticky bottom bar for the workout screen.
 - Logging a set must take <= 5 s: prefilled from "last time", +/- steppers, one tap to confirm, no confirm dialogs.
 - Use shadcn primitives from `src/shared/ui`; customize via props/variants, do not copy them into features.
+- No raw `<button>`, `<input>`, `<textarea>`, `<select>`, `<h1-3>` or `<p>` outside `shared/ui` (ESLint `no-restricted-syntax` enforces it). Buttons: `Button` (variants primary, secondary, destructive, ghost, link, success, card, option, row, bare; sizes sm, md, lg, control, cell, chip, auto, none; `asChild` for links), `IconButton` (`asChild` for links), `Switch`. Text: `Text` (`as` p/span/h1-3/label/dt/dd, size xs-3xl, tone, weight, `numeric`). Containers: `Card` (`as`, `asChild`, `interactive`), `Badge` (pill, round, square), `Stat` (dl item). Need a new look: add a variant or size in `button-variants.ts` / `text-variants.ts` / `input-variants.ts`, do not hand-roll classes at the call site.
 - Accessibility: labels on inputs, focus visible, dialogs from shadcn (focus trap built in).
 
 ## PWA

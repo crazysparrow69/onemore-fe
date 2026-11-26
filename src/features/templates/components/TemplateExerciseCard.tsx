@@ -11,7 +11,9 @@ import { columnLabelKey } from '@/entities/training/model/columns';
 import { workingNumbers } from '@/entities/training/model/display';
 import type { SetKind, SetValueKey } from '@/entities/training/model/draft';
 import { formatClock } from '@/entities/training/model/format';
+import { Button } from '@/shared/ui/button';
 import { IconButton } from '@/shared/ui/icon-button';
+import { Text } from '@/shared/ui/text';
 import { Textarea } from '@/shared/ui/textarea';
 
 function TemplateExerciseCard({
@@ -36,8 +38,6 @@ function TemplateExerciseCard({
   const { t } = useTranslation();
   const [notesOpen, setNotesOpen] = useState(exercise.notes.length > 0);
   const numbers = workingNumbers(exercise.sets);
-  const buttonClass =
-    'flex h-10 items-center gap-2 rounded-lg bg-secondary px-3 text-sm font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50';
 
   return (
     <section className="flex flex-col gap-3 px-4 py-4">
@@ -56,9 +56,9 @@ function TemplateExerciseCard({
             {exercise.name}
           </Link>
           {exercise.archived ? (
-            <span className="text-xs text-muted-foreground">
+            <Text as="span" size="xs" tone="muted">
               {t('templates.archivedExercise')}
-            </span>
+            </Text>
           ) : null}
         </div>
         <IconButton
@@ -71,26 +71,32 @@ function TemplateExerciseCard({
       </header>
 
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={onRest} className={buttonClass}>
-          <Timer className="size-4" aria-hidden />
+        <Button
+          type="button"
+          variant="secondary"
+          size="control"
+          leftIcon={<Timer aria-hidden />}
+          onClick={onRest}
+        >
           {t('workout.rest.button', {
             value:
               exercise.restSeconds && exercise.restSeconds > 0
                 ? formatClock(exercise.restSeconds)
                 : t('workout.rest.offShort'),
           })}
-        </button>
+        </Button>
         {notesOpen ? null : (
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="control"
+            leftIcon={<FilePlus aria-hidden />}
             onClick={() => {
               setNotesOpen(true);
             }}
-            className={buttonClass}
           >
-            <FilePlus className="size-4" aria-hidden />
             {t('workout.note')}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -139,14 +145,15 @@ function TemplateExerciseCard({
         ))}
       </ul>
 
-      <button
+      <Button
         type="button"
+        variant="secondary"
+        fullWidth
+        leftIcon={<Plus aria-hidden />}
         onClick={onAddSet}
-        className="flex h-11 items-center justify-center gap-2 rounded-lg bg-secondary text-base font-medium outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
       >
-        <Plus className="size-4" aria-hidden />
         {t('workout.addSet')}
-      </button>
+      </Button>
     </section>
   );
 }

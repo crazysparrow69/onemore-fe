@@ -4,6 +4,7 @@ import { FilterThumb } from '@/features/exercises/components/FilterThumb';
 import { cn } from '@/shared/lib/utils';
 import { BottomSheet } from '@/shared/ui/bottom-sheet';
 import { SheetActions } from '@/shared/ui/sheet-actions';
+import { Text } from '@/shared/ui/text';
 
 export interface OptionSection {
   id: string;
@@ -86,9 +87,9 @@ function OptionSheet({
         {sections.map((section) => (
           <section key={section.id} className="flex flex-col gap-2.5">
             {section.label ? (
-              <h3 className="text-sm font-medium text-muted-foreground">
+              <Text as="h3" size="sm" weight="medium" tone="muted">
                 {section.label}
-              </h3>
+              </Text>
             ) : null}
             <div
               className={cn(
