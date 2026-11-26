@@ -6,7 +6,6 @@ import {
   profileSchema,
   type ProfileValues,
 } from '@/features/account/model/schema';
-import { initials } from '@/features/account/model/initials';
 import type {
   CurrentUser,
   UserPatch,
@@ -14,7 +13,7 @@ import type {
 import { fieldError } from '@/shared/lib/field-error';
 import { hasErrorCode } from '@/shared/api/error';
 import { toast } from '@/shared/lib/toast';
-import { Avatar } from '@/shared/ui/avatar';
+import { AvatarField } from '@/features/account/components/AvatarField';
 import { Button } from '@/shared/ui/button';
 import { Text } from '@/shared/ui/text';
 import { TextField } from '@/shared/ui/text-field';
@@ -74,7 +73,7 @@ function ProfileForm({ user }: { user: CurrentUser }) {
       }}
     >
       <div className="flex justify-center">
-        <Avatar size="lg" initials={initials(preview)} />
+        <AvatarField user={{ ...user, ...preview }} />
       </div>
       <TextField
         label={t('profile.name')}

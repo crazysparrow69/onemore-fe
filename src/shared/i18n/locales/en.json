@@ -353,5 +353,33 @@
       "finishedAgo": "Rest ended {{time}} ago",
       "exerciseTitle": "Rest: {{name}}"
     }
+  },
+  "media": {
+    "avatar": {
+      "title": "Profile photo",
+      "change": "Change photo",
+      "choose": "Choose photo",
+      "remove": "Remove photo",
+      "removeTitle": "Remove the profile photo?",
+      "removeHint": "Your initials will be shown instead of the photo.",
+      "cropTitle": "Crop photo",
+      "zoom": "Zoom",
+      "use": "Done",
+      "saved": "Profile photo updated",
+      "removed": "Profile photo removed"
+    },
+    "photo": {
+      "title": "Photo",
+      "add": "Add photo",
+      "replace": "Replace",
+      "remove": "Remove",
+      "alt": "Exercise photo"
+    },
+    "errors": {
+      "unsupported": "This file cannot be opened. Choose a JPEG, PNG, WebP or HEIC photo.",
+      "limit": "Too many unfinished uploads. Try again a bit later.",
+      "profileRequired": "Save your profile first.",
+      "failed": "The photo could not be uploaded. Try again."
+    }
   }
 }

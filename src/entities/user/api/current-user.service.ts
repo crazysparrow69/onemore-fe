@@ -21,6 +21,7 @@ export const currentUserSchema = z.object({
   language: z.enum(LANGUAGES),
   units: z.enum(UNITS),
   timeZone: z.string(),
+  avatar: z.string().nullable(),
   createdAt: z.string(),
 });
 
@@ -32,6 +33,7 @@ export interface UserPatch {
   language?: Language;
   units?: Units;
   timeZone?: string;
+  avatarId?: string | null;
 }
 
 export interface AccountProfile {

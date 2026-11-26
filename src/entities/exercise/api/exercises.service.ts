@@ -25,6 +25,7 @@ const listSchema = z.object({
 
 const detailsSchema = listItemSchema.extend({
   imageKeys: z.array(z.string()),
+  photoId: z.string().nullable(),
   category: z.string().nullable(),
   force: z.string().nullable(),
   mechanic: z.string().nullable(),
@@ -80,6 +81,7 @@ export interface ExerciseInput {
   secondaryMuscles: string[];
   equipment: string;
   instructions: string[];
+  photoId: string | null;
 }
 
 export async function fetchExercises(
@@ -144,8 +146,4 @@ export async function fetchExerciseDictionaries(
     dictionariesSchema,
     await client.get('/exercise-dictionaries'),
   );
-}
-
-export function exerciseImageUrl(key: string): string {
-  return `/${key}`;
 }

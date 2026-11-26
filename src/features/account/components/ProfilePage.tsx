@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { Dumbbell, Pencil, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { initials } from '@/features/account/model/initials';
+import { mediaUrl } from '@/entities/media/model/media-url';
 import { useCurrentUser } from '@/entities/user/api/use-auth';
 import { WorkoutHistoryList } from '@/entities/training/components/WorkoutHistoryList';
 import { useWorkoutList } from '@/entities/training/api/use-workouts';
@@ -54,7 +55,13 @@ function ProfilePage() {
       ) : null}
       {user.data ? (
         <div className="flex items-center gap-4">
-          <Avatar size="lg" initials={initials(user.data)} />
+          <Avatar
+            size="lg"
+            initials={initials(user.data)}
+            src={
+              user.data.avatar ? mediaUrl(user.data.avatar, 'avatar_lg') : null
+            }
+          />
           <div className="flex min-w-0 flex-col">
             <Text size="lg" weight="semibold" className="truncate">
               {user.data.name ?? user.data.email}

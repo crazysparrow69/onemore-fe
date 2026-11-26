@@ -19,6 +19,7 @@ describe('.env.example', () => {
       API_URL: 'http://localhost:5001',
       VITE_NEON_AUTH_URL:
         'https://example.neonauth.eu-central-1.aws.neon.tech/neondb/auth',
+      VITE_CLOUDINARY_CLOUD_NAME: 'demo',
     });
   });
 });

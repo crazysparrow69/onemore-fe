@@ -22,6 +22,7 @@ env:
   PORT: '5002'
   API_URL: http://localhost:5001
   VITE_NEON_AUTH_URL: https://auth.example.test/neondb/auth
+  VITE_CLOUDINARY_CLOUD_NAME: demo
 
 # A newer commit cancels the older run of the same event and branch. The event
 # name is part of the key so a `push` run never cancels the `pull_request` run

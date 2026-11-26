@@ -52,6 +52,7 @@ export default defineConfig(({ mode }) => {
         },
         workbox: {
           cleanupOutdatedCaches: true,
+          globIgnores: ['**/heic-to-*.js'],
           navigateFallback: '/index.html',
           navigateFallbackDenylist: [/^\/api\//],
           runtimeCaching: [
@@ -61,12 +62,30 @@ export default defineConfig(({ mode }) => {
             },
             {
               urlPattern: ({ url }) =>
+                /^\/assets\/heic-to-[^/]+\.js$/.test(url.pathname),
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'heic-converter',
+                expiration: { maxEntries: 2 },
+              },
+            },
+            {
+              urlPattern: ({ url }) =>
                 url.pathname.startsWith('/exercises/') &&
                 url.pathname.endsWith('.webp'),
               handler: 'CacheFirst',
               options: {
                 cacheName: 'exercise-photos',
                 expiration: { maxEntries: 300 },
+                cacheableResponse: { statuses: [200] },
+              },
+            },
+            {
+              urlPattern: ({ url }) => url.hostname === 'res.cloudinary.com',
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'user-media',
+                expiration: { maxEntries: 200 },
                 cacheableResponse: { statuses: [200] },
               },
             },

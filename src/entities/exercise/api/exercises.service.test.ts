@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   createExercise,
   deleteExercise,
-  exerciseImageUrl,
   fetchExercise,
   fetchExerciseDictionaries,
   fetchExercises,
@@ -103,6 +102,7 @@ describe('fetchExercise', () => {
     const details = {
       ...item,
       imageKeys: ['exercises/bench/0.webp', 'exercises/bench/1.webp'],
+      photoId: null,
       category: 'strength',
       force: 'push',
       mechanic: 'compound',
@@ -136,14 +136,6 @@ describe('fetchExerciseDictionaries', () => {
   });
 });
 
-describe('exerciseImageUrl', () => {
-  it('turns an image key into a public path', () => {
-    expect(exerciseImageUrl('exercises/bench/0.webp')).toBe(
-      '/exercises/bench/0.webp',
-    );
-  });
-});
-
 describe('creating, replacing and deleting an own exercise', () => {
   const input: ExerciseInput = {
     name: 'Hammer press',
@@ -152,12 +144,14 @@ describe('creating, replacing and deleting an own exercise', () => {
     secondaryMuscles: ['triceps'],
     equipment: 'machine',
     instructions: ['Press'],
+    photoId: null,
   };
   const details = {
     ...item,
     id: '22222222-2222-4222-8222-222222222222',
     custom: true,
     imageKeys: [],
+    photoId: null,
     category: null,
     force: null,
     mechanic: null,

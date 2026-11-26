@@ -7,7 +7,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 const LAYER_RULES = `Dependencies point down only: app, features, entities, shared.
-Entities: user, exercise, training. Features: auth, account, exercises, templates, workouts.`;
+Entities: user, media, exercise, training. Features: auth, account, exercises, templates, workouts.`;
 
 const RAW_ELEMENTS = {
   button:
@@ -22,6 +22,7 @@ const RAW_ELEMENTS = {
 };
 
 const ENTITY_FORBIDS = {
+  media: ['entities/exercise', 'entities/training', 'features', 'app'],
   user: ['entities/exercise', 'entities/training', 'features', 'app'],
   exercise: ['entities/training', 'features', 'app'],
   training: ['features', 'app'],

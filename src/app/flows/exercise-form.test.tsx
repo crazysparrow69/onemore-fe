@@ -72,6 +72,7 @@ const user: CurrentUser = {
   language: 'uk',
   units: 'kg',
   timeZone: 'Europe/Kyiv',
+  avatar: null,
   createdAt: '2026-01-01T00:00:00.000Z',
 };
 
@@ -122,6 +123,7 @@ const own: ExerciseDetails = {
   image: null,
   custom: true,
   imageKeys: [],
+  photoId: null,
   category: null,
   force: null,
   mechanic: null,
@@ -217,6 +219,7 @@ describe('own exercise form', () => {
         secondaryMuscles: [],
         equipment: 'machine',
         instructions: ['Сядьте', 'Вижміть'],
+        photoId: null,
       });
     });
     await waitFor(() => {
@@ -374,6 +377,7 @@ describe('own exercise form', () => {
         secondaryMuscles: ['triceps'],
         equipment: 'machine',
         instructions: ['Сядьте', 'Вижміть'],
+        photoId: null,
       });
     });
     await waitFor(() => {

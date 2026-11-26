@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { exerciseImageUrl } from '@/entities/exercise/api/exercises.service';
+import { mediaUrl } from '@/entities/media/model/media-url';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
 
@@ -55,8 +55,9 @@ function ExercisePhotos({
         }}
       >
         <img
-          src={exerciseImageUrl(current)}
+          src={mediaUrl(current, 'exercise_photo')}
           alt=""
+          crossOrigin="anonymous"
           className="size-full object-contain"
         />
       </Button>

@@ -19,6 +19,7 @@ const details: ExerciseDetails = {
   image: null,
   custom: true,
   imageKeys: [],
+  photoId: null,
   category: null,
   force: null,
   mechanic: null,
@@ -36,6 +37,7 @@ describe('exercise form model', () => {
       secondary: [],
       equipment: 'none',
       steps: '',
+      photoId: null,
     });
     expect(emptyFormValues('Row').name).toBe('Row');
   });
@@ -67,6 +69,7 @@ describe('exercise form model', () => {
       secondary: ['triceps'],
       equipment: 'machine',
       steps: 'Sit down\nPress',
+      photoId: null,
     });
     expect(toInput(values)).toEqual({
       name: 'Hammer press',
@@ -75,6 +78,7 @@ describe('exercise form model', () => {
       secondaryMuscles: ['triceps'],
       equipment: 'machine',
       instructions: ['Sit down', 'Press'],
+      photoId: null,
     });
   });
 

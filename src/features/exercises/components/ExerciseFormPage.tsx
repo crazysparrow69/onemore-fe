@@ -13,6 +13,11 @@ import {
   useExerciseDictionaries,
   useExerciseLabels,
 } from '@/entities/exercise/api/use-exercises';
+import { useImagePreparation } from '@/entities/media/api/use-image-preparation';
+import { useMediaUpload } from '@/entities/media/api/use-media-upload';
+import { isAborted, mediaErrorKey } from '@/entities/media/model/media-error';
+import { mediaUrl } from '@/entities/media/model/media-url';
+import { PhotoField } from '@/features/exercises/components/PhotoField';
 import {
   OptionSheet,
   type OptionSection,
@@ -35,6 +40,7 @@ import { Text } from '@/shared/ui/text';
 import { TextField } from '@/shared/ui/text-field';
 import { Textarea } from '@/shared/ui/textarea';
 import { useSheet } from '@/shared/lib/use-sheet';
+import { newId } from '@/shared/lib/uuid';
 
 const createRoute = getRouteApi('/exercises/new');
 const editRoute = getRouteApi('/exercises/$exerciseId/edit');
@@ -96,10 +102,12 @@ function SelectRow({
 function ExerciseForm({
   initial,
   exerciseId,
+  initialPhotoKey = null,
   typeLocked = false,
 }: {
   initial: ExerciseFormValues;
   exerciseId?: string;
+  initialPhotoKey?: string | null;
   typeLocked?: boolean;
 }) {
   const { t } = useTranslation();
@@ -118,6 +126,13 @@ function ExerciseForm({
   const { errors, isValid } = form.formState;
   const sheet = useSheet<SheetName>();
   const [confirmingCancel, setConfirmingCancel] = useState(false);
+  const photoUpload = useMediaUpload('exercise_photo');
+  const photoPreparation = useImagePreparation();
+  const photoBusy = photoUpload.uploading || photoPreparation.preparing;
+  const [photoUrl, setPhotoUrl] = useState<string | null>(
+    initialPhotoKey ? mediaUrl(initialPhotoKey, 'exercise_photo') : null,
+  );
+  const [photoSeed] = useState(() => exerciseId ?? newId());
 
   const data = dictionaries.data;
   const primary = values.primary ?? [];
@@ -134,6 +149,24 @@ function ExerciseForm({
       shouldDirty: true,
       shouldValidate: true,
     });
+  }
+
+  async function pickPhoto(file: File) {
+    try {
+      const ready = await photoPreparation.prepare(file);
+      const uploaded = await photoUpload.start(ready);
+      setPhotoUrl(uploaded.previewUrl);
+      form.setValue('photoId', uploaded.id, { shouldDirty: true });
+    } catch (error) {
+      if (!isAborted(error)) {
+        toast.error(t(mediaErrorKey(error)));
+      }
+    }
+  }
+
+  function removePhoto() {
+    setPhotoUrl(null);
+    form.setValue('photoId', null, { shouldDirty: true });
   }
 
   function leave() {
@@ -228,7 +261,7 @@ function ExerciseForm({
           variant="ghost"
           size="sm"
           className="justify-self-end px-2 text-primary"
-          disabled={!isValid || !data}
+          disabled={!isValid || !data || photoBusy}
           loading={mutation.isPending}
           onClick={submit}
         >
@@ -240,11 +273,22 @@ function ExerciseForm({
         className="flex flex-1 flex-col gap-4 px-4 pb-10"
         onSubmit={(event) => {
           event.preventDefault();
-          if (data) {
+          if (data && !photoBusy) {
             submit();
           }
         }}
       >
+        <PhotoField
+          url={photoUrl}
+          seed={photoSeed}
+          uploading={photoBusy}
+          progress={photoUpload.progress}
+          onPick={(file) => {
+            void pickPhoto(file);
+          }}
+          onRemove={removePhoto}
+        />
+
         <TextField
           label={t('exerciseForm.name')}
           variant="outline"
@@ -444,6 +488,7 @@ function ExerciseEditPage() {
     <ExerciseForm
       key={data.id}
       exerciseId={data.id}
+      initialPhotoKey={data.photoId ? data.image : null}
       typeLocked={data.typeLocked}
       initial={formValuesOf(data)}
     />

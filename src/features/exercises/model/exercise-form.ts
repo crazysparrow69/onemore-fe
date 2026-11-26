@@ -11,6 +11,7 @@ export const exerciseFormSchema = z.object({
   secondary: z.array(z.string()),
   equipment: z.string(),
   steps: z.string(),
+  photoId: z.string().nullable(),
 });
 
 export type ExerciseFormValues = z.infer<typeof exerciseFormSchema>;
@@ -35,6 +36,7 @@ export function emptyFormValues(name = ''): ExerciseFormValues {
     secondary: [],
     equipment: 'none',
     steps: '',
+    photoId: null,
   };
 }
 
@@ -46,6 +48,7 @@ export function formValuesOf(exercise: ExerciseDetails): ExerciseFormValues {
     secondary: exercise.secondaryMuscles,
     equipment: exercise.equipment,
     steps: exercise.instructions.join('\n'),
+    photoId: exercise.photoId,
   };
 }
 
@@ -66,6 +69,7 @@ export function toInput(values: ExerciseFormValues): ExerciseInput {
     instructions: values.steps
       .split('\n')
       .filter((line) => line.trim().length > 0),
+    photoId: values.photoId,
   };
 }
 

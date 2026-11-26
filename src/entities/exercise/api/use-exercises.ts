@@ -73,6 +73,7 @@ export function useExercise(id: string) {
             return {
               ...item,
               imageKeys: item.image ? [item.image] : [],
+              photoId: null,
               category: null,
               force: null,
               mechanic: null,

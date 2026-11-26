@@ -42,7 +42,7 @@ Do NOT add a dependency that is not in this table or the plan. If one seems nece
 ## 2. Scope
 
 - MVP = v0.1: auth, onboarding + account settings, exercise catalog + private exercises, workout recording + templates, weekly schedule + month calendar, nutrition diary with daily target.
-- NOT in MVP (do not build or scaffold): AI, progress charts, food database / barcode / photo, social, trainers, payments, landing page, full offline mode, GDPR export, Cloudinary uploads, React Native.
+- NOT in MVP (do not build or scaffold): AI, progress charts, food database / barcode / photo, social, trainers, payments, landing page, full offline mode, GDPR export, React Native. Cloudinary is used only for user photos (avatar, own exercise photo).
 
 Feature-level detail, roadmap, phases, open questions: [reference/scope-and-status.md](reference/scope-and-status.md).
 
@@ -70,7 +70,7 @@ Feature-level detail, roadmap, phases, open questions: [reference/scope-and-stat
 **Resilience and cost**
 12. Calendar = parallel requests to core and nutrition (TanStack Query). If nutrition fails, the calendar still renders without calories.
 13. Onboarding writes profile to core and body + goal to nutrition with idempotent requests; the "onboarding done" flag is set LAST.
-14. The service worker never caches `/api/*` responses (no offline API cache in MVP). Exercise images are WebP in `public/exercises/` served by the Vercel CDN, never from Cloud Run or a hotlinked third party.
+14. The service worker never caches `/api/*` responses (no offline API cache in MVP). Catalog exercise images are WebP in `public/exercises/` served by the Vercel CDN, never from Cloud Run or a hotlinked third party. User photos live in Cloudinary: the API stores only a key, and every URL is built in one place, `entities/media/model/media-url` (named transformations `t_<variant>`, same names as the backend). Files go straight to Cloudinary with a backend-signed ticket (`entities/media/api`), compressed on the phone first (`prepareImage` first converts HEIC/HEIF to JPEG with the lazy `heic-to` chunk when the browser cannot decode it; that chunk is excluded from the precache and cached at runtime); never proxy files through the API. Cloudinary images use `crossOrigin="anonymous"` and the `user-media` runtime cache.
 15. No polling, no intervals, no background requests that keep backend services or Neon awake. The only exception is the warm-up: one parallel `GET /health` per service on app open (phase 8).
 
 **UI**
@@ -81,7 +81,7 @@ Rule details and rationale: [reference/api-and-auth.md](reference/api-and-auth.m
 
 ## 4. Conventions
 
-- Layout: `src/app/` (router, providers, root layout, flow tests), `src/features/<feature>/` (auth, account, exercises, templates, workouts), `src/entities/<entity>/` (user, exercise, training: api, model, shared components), `src/shared/` (ui = shadcn + shared sheets/states, api, i18n, lib). Import direction: `app -> features -> entities -> shared`, enforced by ESLint `no-restricted-imports`. Entities depend only downwards (`user <- exercise <- training`); features never import `app`; between features only `templates -> exercises` and `workouts -> templates, exercises` are allowed, through the feature's `index.ts` or its components.
+- Layout: `src/app/` (router, providers, root layout, flow tests), `src/features/<feature>/` (auth, account, exercises, templates, workouts), `src/entities/<entity>/` (user, media, exercise, training: api, model, shared components), `src/shared/` (ui = shadcn + shared sheets/states, api, i18n, lib). Import direction: `app -> features -> entities -> shared`, enforced by ESLint `no-restricted-imports`. Entities depend only downwards (`user <- media`, `user <- exercise <- training`; `media` and `exercise` may be used by `training` and by features); features never import `app`; between features only `templates -> exercises` and `workouts -> templates, exercises` are allowed, through the feature's `index.ts` or its components.
 - Server data lives only in TanStack Query. Never copy query data into Zustand or `useState`, never fetch in `useEffect`. Query keys come from one factory per feature.
 - Forms: one Zod schema per form in the feature's `model/`, wired with `zodResolver`. Validation messages are i18n keys.
 - Tests assert behavior, not user-visible copy. Do not assert translated strings, labels, or toast text. See the Tests section in [reference/frontend-patterns.md](reference/frontend-patterns.md).

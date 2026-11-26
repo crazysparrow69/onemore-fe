@@ -106,6 +106,7 @@ const user: CurrentUser = {
   language: 'en',
   units: 'kg',
   timeZone: 'Europe/Kyiv',
+  avatar: null,
   createdAt: '2026-01-01T00:00:00.000Z',
 };
 

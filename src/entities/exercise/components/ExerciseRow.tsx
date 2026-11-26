@@ -1,11 +1,9 @@
 import { Link } from '@tanstack/react-router';
 import { Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import {
-  exerciseImageUrl,
-  type ExerciseListItem,
-} from '@/entities/exercise/api/exercises.service';
+import type { ExerciseListItem } from '@/entities/exercise/api/exercises.service';
 import { ExercisePlaceholder } from '@/entities/exercise/components/ExercisePlaceholder';
+import { mediaUrl } from '@/entities/media/model/media-url';
 import type { ExerciseLabels } from '@/entities/exercise/model/labels';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/ui/button';
@@ -29,8 +27,9 @@ function ExerciseThumb({
       )}
     >
       <img
-        src={exerciseImageUrl(image)}
+        src={mediaUrl(image, 'exercise_thumb')}
         alt=""
+        crossOrigin="anonymous"
         loading="lazy"
         className="size-full object-cover"
       />

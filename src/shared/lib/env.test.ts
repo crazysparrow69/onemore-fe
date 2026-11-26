@@ -5,6 +5,7 @@ const valid = {
   PORT: '5002',
   API_URL: 'http://localhost:5001',
   VITE_NEON_AUTH_URL: 'https://auth.example.test/neondb/auth',
+  VITE_CLOUDINARY_CLOUD_NAME: 'demo',
 };
 
 describe('validateEnv', () => {
@@ -13,6 +14,7 @@ describe('validateEnv', () => {
       PORT: 5002,
       API_URL: 'http://localhost:5001',
       VITE_NEON_AUTH_URL: 'https://auth.example.test/neondb/auth',
+      VITE_CLOUDINARY_CLOUD_NAME: 'demo',
     });
   });
 

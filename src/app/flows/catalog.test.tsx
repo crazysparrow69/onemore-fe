@@ -63,6 +63,7 @@ const user: CurrentUser = {
   language: 'uk',
   units: 'kg',
   timeZone: 'Europe/Kyiv',
+  avatar: null,
   createdAt: '2026-01-01T00:00:00.000Z',
 };
 
@@ -104,6 +105,7 @@ const bench: ExerciseListItem = {
 const details: ExerciseDetails = {
   ...bench,
   imageKeys: ['exercises/bench/0.webp', 'exercises/bench/1.webp'],
+  photoId: null,
   category: 'strength',
   force: null,
   mechanic: null,
@@ -362,6 +364,7 @@ describe('exercise catalog', () => {
       name: 'Жим у хамері',
       custom: true,
       imageKeys: [],
+      photoId: null,
       image: null,
     };
     vi.mocked(fetchExercise).mockResolvedValue(own);

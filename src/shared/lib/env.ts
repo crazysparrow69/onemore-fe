@@ -40,10 +40,15 @@ const httpsUrl = z.string(required).refine(
   { message: 'must be an https URL' },
 );
 
+const cloudName = z.string(required).regex(/^[a-z0-9_-]+$/i, {
+  message: 'must contain only letters, digits, _ and -',
+});
+
 export const envSchema = z.object({
   PORT: port,
   API_URL: httpUrl,
   VITE_NEON_AUTH_URL: httpsUrl,
+  VITE_CLOUDINARY_CLOUD_NAME: cloudName,
 });
 
 export const ENV_KEYS = Object.keys(envSchema.shape);
