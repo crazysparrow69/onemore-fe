@@ -1,8 +1,14 @@
 import { Navigate, useRouter } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CurrentUser } from '@/features/auth/api/current-user.service';
 import { useCurrentUser } from '@/features/auth/api/use-auth';
+import {
+  useSaveTemplate,
+  useTemplates,
+} from '@/features/templates/api/use-templates';
+import { UpdateProgramToggle } from '@/features/templates/components/UpdateProgramToggle';
+import { computeTemplateUpdate } from '@/features/templates/model/update-from-workout';
 import { useSaveWorkout } from '@/features/workouts/api/use-workouts';
 import {
   completedSetCount,
@@ -62,6 +68,9 @@ function FinishForm({ draft, user }: { draft: Draft; user: CurrentUser }) {
   const setMeta = useDraftStore((state) => state.setMeta);
   const discard = useDraftStore((state) => state.discard);
   const save = useSaveWorkout();
+  const saveTemplate = useSaveTemplate();
+  const templates = useTemplates();
+  const [updateProgram, setUpdateProgram] = useState(false);
   const [openedAt] = useState(() => new Date());
   const [startedAt, setStartedAt] = useState(() =>
     toLocalInput(draft.startedAt),
@@ -83,6 +92,15 @@ function FinishForm({ draft, user }: { draft: Draft; user: CurrentUser }) {
   const start = fromLocalInput(startedAt);
   const length = parseInteger(minutes);
   const valid = start !== null && length !== null && length > 0;
+  const proposal = useMemo(
+    () => computeTemplateUpdate(draft, units),
+    [draft, units],
+  );
+  const programId = draft.template?.id;
+  const programExists =
+    programId !== undefined &&
+    templates.data?.items.some((item) => item.id === programId) === true;
+  const offeredUpdate = programExists ? proposal : null;
 
   function submit() {
     if (start === null || length === null) {
@@ -103,16 +121,38 @@ function FinishForm({ draft, user }: { draft: Draft; user: CurrentUser }) {
       },
       {
         onSuccess: (workout) => {
-          void router
-            .navigate({
-              to: '/workouts/$workoutId',
-              params: { workoutId: workout.id },
-              replace: true,
-            })
-            .then(() => {
-              discard();
-              toast.success(t('workout.saved'));
-            });
+          const finish = (updated: boolean | null): void => {
+            void router
+              .navigate({
+                to: '/workouts/$workoutId',
+                params: { workoutId: workout.id },
+                replace: true,
+              })
+              .then(() => {
+                discard();
+                toast.success(t('workout.saved'));
+                if (updated === true) {
+                  toast.success(t('templates.update.done'));
+                } else if (updated === false) {
+                  toast.error(t('templates.update.failed'));
+                }
+              });
+          };
+          if (updateProgram && offeredUpdate && programId) {
+            saveTemplate.mutate(
+              { id: programId, payload: offeredUpdate.payload },
+              {
+                onSuccess: () => {
+                  finish(true);
+                },
+                onError: () => {
+                  finish(false);
+                },
+              },
+            );
+          } else {
+            finish(null);
+          }
         },
         onError: (error) => {
           toast.error(t(errorKey(error)));
@@ -144,7 +184,7 @@ function FinishForm({ draft, user }: { draft: Draft; user: CurrentUser }) {
           size="sm"
           className="justify-self-end px-2 text-primary"
           disabled={completed === 0 || !valid}
-          loading={save.isPending}
+          loading={save.isPending || saveTemplate.isPending}
           onClick={submit}
         >
           {t('workout.save')}
@@ -219,6 +259,14 @@ function FinishForm({ draft, user }: { draft: Draft; user: CurrentUser }) {
             />
           </div>
         </div>
+        {offeredUpdate && draft.template ? (
+          <UpdateProgramToggle
+            name={draft.template.name}
+            changes={offeredUpdate.changes}
+            checked={updateProgram}
+            onChange={setUpdateProgram}
+          />
+        ) : null}
         {unfinished > 0 ? (
           <Text size="sm" tone="muted">
             {t('workout.unfinished', { count: unfinished })}

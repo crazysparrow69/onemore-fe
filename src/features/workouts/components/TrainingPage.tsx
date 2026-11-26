@@ -2,6 +2,7 @@ import { useRouter } from '@tanstack/react-router';
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useCurrentUser } from '@/features/auth/api/use-auth';
+import { ProgramsSection } from '@/features/templates/components/ProgramsSection';
 import {
   useDraftStore,
   useWorkoutDraft,
@@ -42,17 +43,7 @@ function TrainingPage() {
         {draft ? t('training.continue') : t('training.start')}
       </button>
 
-      <section className="flex flex-col gap-3">
-        <Text as="h2" size="lg" weight="semibold">
-          {t('training.programs')}
-        </Text>
-        <div className="flex flex-col gap-1 rounded-xl bg-card p-4">
-          <Text weight="medium">{t('training.programsEmpty')}</Text>
-          <Text size="sm" tone="muted">
-            {t('training.programsEmptyHint')}
-          </Text>
-        </div>
-      </section>
+      <ProgramsSection />
     </main>
   );
 }

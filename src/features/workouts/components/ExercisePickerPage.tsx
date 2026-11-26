@@ -70,7 +70,9 @@ function ExercisePickerPage() {
       }}
       pick={{
         title: t('workout.pickerTitle'),
-        backTo: '/workout',
+        onBack: () => {
+          void router.navigate({ to: '/workout', replace: true });
+        },
         selected,
         onToggle: toggle,
         confirmLabel: t('workout.addCount', { count: selected.size }),

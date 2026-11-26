@@ -7,7 +7,9 @@ import {
   applyPrevious,
   applyPreviousToSet,
   createDraft,
+  draftFromTemplate,
   draftSchema,
+  type FieldRule,
   moveExercise,
   removeExercise,
   removeSet,
@@ -22,6 +24,7 @@ import {
 } from '@/features/workouts/model/draft';
 import type { Units } from '@/features/auth/api/current-user.service';
 import type { PreviousExercise } from '@/features/workouts/model/previous';
+import type { TemplateSource } from '@/features/workouts/model/template-link';
 import {
   adjustRest,
   setRestSeconds,
@@ -43,6 +46,11 @@ export interface DraftState {
   ownerId: string | null;
   draft: Draft | null;
   start: (ownerId: string) => void;
+  startFromTemplate: (
+    ownerId: string,
+    template: TemplateSource,
+    fieldsOf: (type: string) => FieldRule[],
+  ) => void;
   discard: () => void;
   addExercises: (picked: readonly PickedExercise[]) => void;
   removeExercise: (exerciseId: string) => void;
@@ -83,6 +91,18 @@ export const useDraftStore = create<DraftState>()(
         draft: null,
         start: (ownerId) => {
           set({ ownerId, draft: createDraft(uuidV7(), new Date()) });
+        },
+        startFromTemplate: (ownerId, template, fieldsOf) => {
+          set({
+            ownerId,
+            draft: draftFromTemplate(
+              uuidV7(),
+              new Date(),
+              template,
+              fieldsOf,
+              newId,
+            ),
+          });
         },
         discard: () => {
           set({ ownerId: null, draft: null });

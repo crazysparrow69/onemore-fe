@@ -148,6 +148,47 @@ const trainingRoute = createRoute({
   ),
 });
 
+const programsNewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/programs/new',
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/templates'),
+    'TemplateNewPage',
+  ),
+});
+
+const programsAddRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/programs/add',
+  validateSearch: validateCatalogSearch,
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/templates'),
+    'TemplateExercisePickerPage',
+  ),
+});
+
+const programEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/programs/$programId/edit',
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/templates'),
+    'TemplateEditPage',
+  ),
+});
+
+const programRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/programs/$programId',
+  beforeLoad: () => requireUser(),
+  component: lazyRouteComponent(
+    () => import('@/features/templates'),
+    'TemplatePage',
+  ),
+});
+
 const workoutDetailsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/workouts/$workoutId',
@@ -193,6 +234,10 @@ const routeTree = rootRoute.addChildren([
   workoutAddRoute,
   workoutFinishRoute,
   workoutDetailsRoute,
+  programsNewRoute,
+  programsAddRoute,
+  programEditRoute,
+  programRoute,
   signInRoute,
   signUpRoute,
   callbackRoute,

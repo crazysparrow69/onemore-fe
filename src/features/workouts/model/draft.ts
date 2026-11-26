@@ -2,10 +2,15 @@ import { z } from 'zod';
 import type { Units } from '@/features/auth/api/current-user.service';
 import {
   previousExerciseSchema,
+  previousSetSchema,
   previousValues,
   matchPrevious,
   type PreviousExercise,
 } from '@/features/workouts/model/previous';
+import {
+  templateLinkSchema,
+  type TemplateSource,
+} from '@/features/workouts/model/template-link';
 import { restSchema, startRest } from '@/features/workouts/model/rest';
 import {
   parseDecimal,
@@ -41,6 +46,7 @@ export const draftSetSchema = z.object({
   duration: z.string(),
   distance: z.string(),
   completedAt: z.string().nullable(),
+  target: previousSetSchema.nullable().optional(),
 });
 export type DraftSet = z.infer<typeof draftSetSchema>;
 
@@ -54,6 +60,7 @@ export const draftExerciseSchema = z.object({
   fields: z.array(draftFieldRuleSchema),
   notes: z.string(),
   restSeconds: z.number().nullable().optional(),
+  planned: z.boolean().optional(),
   previous: previousExerciseSchema.nullable().optional(),
   sets: z.array(draftSetSchema),
 });
@@ -65,6 +72,7 @@ export const draftSchema = z.object({
   name: z.string(),
   notes: z.string(),
   rest: restSchema.nullable().optional(),
+  template: templateLinkSchema.nullable().optional(),
   exercises: z.array(draftExerciseSchema),
 });
 export type Draft = z.infer<typeof draftSchema>;
@@ -113,6 +121,63 @@ export function createDraft(id: string, now: Date): Draft {
 }
 
 export type IdFactory = () => string;
+
+export function draftFromTemplate(
+  id: string,
+  now: Date,
+  template: TemplateSource,
+  fieldsOf: (type: string) => FieldRule[],
+  newId: IdFactory,
+): Draft {
+  return {
+    id,
+    startedAt: now.toISOString(),
+    name: template.name,
+    notes: '',
+    template: {
+      id: template.id,
+      name: template.name,
+      notes: template.notes,
+      exercises: template.exercises.map((exercise) => ({
+        exerciseId: exercise.exerciseId,
+        name: exercise.name,
+        notes: exercise.notes,
+        restSeconds: exercise.restSeconds,
+        sets: exercise.sets.map((set) => ({
+          kind: set.kind,
+          weightKg: set.weightKg,
+          reps: set.reps,
+          durationS: set.durationS,
+          distanceM: set.distanceM,
+        })),
+      })),
+    },
+    exercises: template.exercises
+      .slice(0, MAX_EXERCISES)
+      .map((exercise): DraftExercise => ({
+        id: newId(),
+        exerciseId: exercise.exerciseId,
+        name: exercise.name,
+        image: exercise.image,
+        type: exercise.type,
+        custom: exercise.custom,
+        fields: fieldsOf(exercise.type),
+        notes: exercise.notes ?? '',
+        restSeconds: exercise.restSeconds,
+        planned: true,
+        sets: exercise.sets.slice(0, MAX_SETS).map((set) => ({
+          ...emptySet(newId(), set.kind),
+          target: {
+            kind: set.kind,
+            weightKg: set.weightKg,
+            reps: set.reps,
+            durationS: set.durationS,
+            distanceM: set.distanceM,
+          },
+        })),
+      })),
+  };
+}
 
 export function addExercises(
   draft: Draft,
@@ -273,6 +338,11 @@ export function placeholderValue(
   key: SetValueKey,
   units: Units,
 ): string {
+  const target = exercise.sets[index]?.target;
+  const planned = target ? previousValues(target, units)[key] : '';
+  if (planned.length > 0) {
+    return planned;
+  }
   const last = lastTimeValues(exercise, index, units)?.[key] ?? '';
   return last.length > 0
     ? last
@@ -317,9 +387,9 @@ export function applyPrevious(
         restSeconds: found.restSeconds,
         sets: found.sets,
       };
-      const shape = exercise.sets.every(
-        (set) => isPristine(set) && set.kind === 'working',
-      );
+      const shape =
+        exercise.planned !== true &&
+        exercise.sets.every((set) => isPristine(set) && set.kind === 'working');
       const sets =
         shape && previous.sets.length > 0
           ? previous.sets
@@ -329,7 +399,10 @@ export function applyPrevious(
       return {
         ...exercise,
         previous,
-        restSeconds: exercise.restSeconds ?? previous.restSeconds,
+        restSeconds:
+          exercise.planned === true
+            ? (exercise.restSeconds ?? null)
+            : (exercise.restSeconds ?? previous.restSeconds),
         sets,
       };
     }),
@@ -445,6 +518,7 @@ export interface WorkoutSetPayload {
 
 export interface WorkoutPayload {
   name: string;
+  templateId: string | null;
   notes: string | null;
   startedAt: string;
   endedAt: string;
@@ -455,6 +529,27 @@ export interface WorkoutPayload {
     restSeconds: number | null;
     sets: WorkoutSetPayload[];
   }[];
+}
+
+export interface MetricSetValues {
+  weightKg: number | null;
+  reps: number | null;
+  durationS: number | null;
+  distanceM: number | null;
+}
+
+export function setValuesToMetric(
+  values: Pick<DraftSet, SetValueKey>,
+  units: Units,
+): MetricSetValues {
+  const weight = parseDecimal(values.weight);
+  const distance = parseDecimal(values.distance);
+  return {
+    weightKg: weight === null ? null : unitsToKg(weight, units),
+    reps: parseInteger(values.reps),
+    durationS: parseDuration(values.duration),
+    distanceM: distance === null ? null : Math.round(distance * 100000) / 100,
+  };
 }
 
 function orNull(text: string): string | null {
@@ -468,6 +563,7 @@ export function toWorkoutPayload(
 ): WorkoutPayload {
   return {
     name: draft.name.trim(),
+    templateId: draft.template?.id ?? null,
     notes: orNull(draft.notes),
     startedAt: draft.startedAt,
     endedAt: options.endedAt.toISOString(),
@@ -476,19 +572,11 @@ export function toWorkoutPayload(
       exerciseId: exercise.exerciseId,
       notes: orNull(exercise.notes),
       restSeconds: exercise.restSeconds ?? null,
-      sets: exercise.sets.map((set) => {
-        const weight = parseDecimal(set.weight);
-        const distance = parseDecimal(set.distance);
-        return {
-          kind: set.kind,
-          weightKg: weight === null ? null : unitsToKg(weight, options.units),
-          reps: parseInteger(set.reps),
-          durationS: parseDuration(set.duration),
-          distanceM:
-            distance === null ? null : Math.round(distance * 100000) / 100,
-          completedAt: set.completedAt,
-        };
-      }),
+      sets: exercise.sets.map((set) => ({
+        kind: set.kind,
+        ...setValuesToMetric(set, options.units),
+        completedAt: set.completedAt,
+      })),
     })),
   };
 }

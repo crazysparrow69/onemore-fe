@@ -306,6 +306,7 @@ describe('toWorkoutPayload', () => {
     expect(payload).toEqual({
       name: 'Push',
       notes: null,
+      templateId: null,
       startedAt: '2026-11-25T10:00:00.000Z',
       endedAt: '2026-11-25T11:00:00.000Z',
       timeZone: 'Europe/Kyiv',

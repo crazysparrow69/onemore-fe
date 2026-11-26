@@ -9,7 +9,7 @@ const TABS = [
     to: '/training',
     label: 'nav.training',
     icon: Dumbbell,
-    routes: ['/training'],
+    routes: ['/training', '/programs/$programId'],
   },
   {
     to: '/profile',

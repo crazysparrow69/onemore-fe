@@ -134,6 +134,7 @@ const saved: WorkoutDetails = {
   id: '019a0000-0000-7000-8000-000000000000',
   name: 'Evening workout',
   notes: null,
+  templateId: null,
   startedAt: '2026-11-25T10:00:00.000Z',
   endedAt: '2026-11-25T11:00:00.000Z',
   localDate: '2026-11-25',

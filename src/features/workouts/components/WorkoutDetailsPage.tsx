@@ -1,9 +1,10 @@
 import { getRouteApi, Link, useRouter } from '@tanstack/react-router';
-import { ArrowLeft, Ellipsis, Trash2 } from 'lucide-react';
+import { ArrowLeft, Ellipsis, FilePlus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrentUser } from '@/features/auth/api/use-auth';
 import { ExerciseThumb } from '@/features/exercises/components/ExerciseRow';
+import { useEditorLaunch } from '@/features/templates/model/use-launch';
 import {
   useDeleteWorkout,
   useWorkout,
@@ -35,6 +36,7 @@ function WorkoutDetailsPage() {
   const workout = useWorkout(workoutId);
   const [menu, setMenu] = useState<'actions' | 'delete' | null>(null);
   const remove = useDeleteWorkout(workoutId);
+  const launch = useEditorLaunch();
   const units = user.data?.units ?? 'kg';
   const data = workout.data;
   const notFound =
@@ -209,6 +211,20 @@ function WorkoutDetailsPage() {
         }}
         title={t('workout.detailsMenu')}
       >
+        <button
+          type="button"
+          disabled={!launch.ready || !data}
+          onClick={() => {
+            if (data) {
+              setMenu(null);
+              launch.programFromWorkout(data);
+            }
+          }}
+          className="flex w-full items-center gap-3 py-3 text-left text-base outline-none focus-visible:bg-accent disabled:opacity-40"
+        >
+          <FilePlus className="size-5" aria-hidden />
+          {t('templates.saveFromWorkout')}
+        </button>
         <button
           type="button"
           onClick={() => {

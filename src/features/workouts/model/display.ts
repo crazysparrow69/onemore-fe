@@ -29,7 +29,7 @@ export function volumeLabel(
 }
 
 export function setLabel(
-  set: WorkoutSet,
+  set: Pick<WorkoutSet, 'weightKg' | 'reps' | 'durationS' | 'distanceM'>,
   options: { units: Units; language: string; t: TFunction },
 ): string {
   const { units, language, t } = options;

@@ -37,6 +37,7 @@ const exerciseSchema = z.object({
 
 const baseShape = {
   id: z.string(),
+  templateId: z.string().nullable(),
   name: z.string(),
   notes: z.string().nullable(),
   startedAt: z.string(),

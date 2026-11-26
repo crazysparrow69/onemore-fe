@@ -83,10 +83,7 @@ function SetRow({
       >
         {lastTime === null
           ? '—'
-          : setLabel(
-              { ...lastTime, completedAt: null },
-              { units, language: i18n.language, t },
-            )}
+          : setLabel(lastTime, { units, language: i18n.language, t })}
       </button>
       {exercise.fields.map((rule) => {
         const key = FIELD_KEYS[rule.id];
