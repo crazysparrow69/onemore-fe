@@ -8,3 +8,7 @@ export const MIN_WEIGHT_KG = 20;
 export const MAX_WEIGHT_KG = 400;
 export const NOTE_MAX_LENGTH = 200;
 export const WEIGHT_WINDOW_DAYS = 30;
+export const MIN_PROTEIN_G_PER_KG = 0.8;
+export const MAX_PROTEIN_G_PER_KG = 3;
+export const MIN_FAT_SHARE_PERCENT = 15;
+export const MAX_FAT_SHARE_PERCENT = 45;

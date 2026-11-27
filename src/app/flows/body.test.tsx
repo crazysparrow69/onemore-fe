@@ -99,6 +99,8 @@ const body: Body = {
   birthDate: '1990-05-17',
   heightCm: 180,
   activityLevel: 'moderate',
+  proteinGPerKg: null,
+  fatSharePercent: null,
   updatedAt: '2026-11-27T10:00:00.000Z',
 };
 
@@ -134,6 +136,8 @@ const target: Target = {
     activityLevel: 'moderate',
     goalType: 'lose',
     rateKgPerWeek: 0.5,
+    proteinGPerKg: 1.9,
+    fatSharePercent: 26,
   },
 };
 
@@ -191,6 +195,8 @@ describe('body, goal and weight', () => {
           birthDate: '1990-05-17',
           heightCm: 180,
           activityLevel: 'light',
+          proteinGPerKg: null,
+          fatSharePercent: null,
         },
         today,
       );
@@ -296,6 +302,8 @@ describe('body, goal and weight', () => {
           birthDate: '1990-05-17',
           heightCm: 181.5,
           activityLevel: 'moderate',
+          proteinGPerKg: null,
+          fatSharePercent: null,
         },
         today,
       );
@@ -303,6 +311,84 @@ describe('body, goal and weight', () => {
     await waitFor(() => {
       expect(history.location.pathname).toBe('/body');
     });
+  });
+
+  it('saves own protein and fat from the body form', async () => {
+    givenFilled();
+    vi.mocked(saveBody).mockImplementation((input) =>
+      Promise.resolve({ ...input, updatedAt: '2026-11-27T11:00:00.000Z' }),
+    );
+    await renderAt('/body/edit');
+
+    fireEvent.change(
+      await screen.findByLabelText('Protein, g per kg of weight'),
+      { target: { value: '1,4' } },
+    );
+    fireEvent.change(screen.getByLabelText('Fat, % of calories'), {
+      target: { value: '30' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => {
+      expect(saveBody).toHaveBeenCalledWith(
+        expect.objectContaining({ proteinGPerKg: 1.4, fatSharePercent: 30 }),
+        today,
+      );
+    });
+  });
+
+  it('does not send protein or fat outside the supported range', async () => {
+    givenFilled();
+    await renderAt('/body/edit');
+
+    fireEvent.change(
+      await screen.findByLabelText('Protein, g per kg of weight'),
+      { target: { value: '5' } },
+    );
+    fireEvent.change(screen.getByLabelText('Fat, % of calories'), {
+      target: { value: '60' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(
+      await screen.findByText('Enter protein between 0.8 and 3 g per kg'),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('Enter a whole number between 15 and 45'),
+    ).toBeTruthy();
+    expect(saveBody).not.toHaveBeenCalled();
+  });
+
+  it('explains how the target was calculated step by step', async () => {
+    givenFilled();
+    await renderAt('/body');
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'How it is calculated' }),
+    );
+
+    expect(await screen.findByText('Activity factor')).toBeTruthy();
+    expect(screen.getByText('× 1.55')).toBeTruthy();
+    expect(screen.getByText('−390 kcal')).toBeTruthy();
+    expect(screen.getByText('Protein: 1.9 g/kg of body weight.')).toBeTruthy();
+  });
+
+  it('explains an own target by the same rules', async () => {
+    givenFilled();
+    vi.mocked(fetchTarget).mockResolvedValue({
+      ...target,
+      source: 'manual',
+      bmrKcal: null,
+      tdeeKcal: null,
+      inputs: null,
+    });
+    await renderAt('/body');
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'How it is calculated' }),
+    );
+
+    expect(await screen.findByText(/The calories are yours/)).toBeTruthy();
   });
 
   it('does not send an invalid body', async () => {

@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUseAutoTarget } from '@/entities/nutrition/api/use-target';
+import type { Body } from '@/entities/body/model/schemas';
 import type { Target } from '@/entities/nutrition/model/schemas';
+import type { Units } from '@/entities/user/api/current-user.service';
 import { dateLabel } from '@/entities/training/model/display';
 import { formatNumber } from '@/entities/training/model/format';
 import { ManualTargetSheet } from '@/features/body/components/ManualTargetSheet';
+import { TargetDetails } from '@/features/body/components/TargetDetails';
 import { hasErrorCode } from '@/shared/api/error';
 import { toast } from '@/shared/lib/toast';
 import { Badge } from '@/shared/ui/badge';
@@ -13,14 +16,21 @@ import { Card } from '@/shared/ui/card';
 import { Stat } from '@/shared/ui/stat';
 import { Text } from '@/shared/ui/text';
 
-function TargetCard({ target }: { target: Target }) {
+function TargetCard({
+  target,
+  body,
+  units,
+}: {
+  target: Target;
+  body: Body | null;
+  units: Units;
+}) {
   const { t, i18n } = useTranslation();
   const [manualOpen, setManualOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const autoTarget = useUseAutoTarget();
   const grams = t('target.gramsShort');
   const kcal = t('target.kcal');
-  const hasDetails = target.bmrKcal !== null && target.tdeeKcal !== null;
 
   function backToAuto(): void {
     autoTarget.mutate(undefined, {
@@ -71,32 +81,23 @@ function TargetCard({ target }: { target: Target }) {
           {t('target.floorNote')}
         </Text>
       ) : null}
-      {hasDetails ? (
-        <div className="flex flex-col gap-2">
-          <Button
-            type="button"
-            variant="link"
-            size="none"
-            className="self-start"
-            aria-expanded={detailsOpen}
-            onClick={() => {
-              setDetailsOpen((open) => !open);
-            }}
-          >
-            {t('target.details')}
-          </Button>
-          {detailsOpen ? (
-            <dl className="grid grid-cols-2">
-              <Stat label={t('target.bmr')} numeric>
-                {formatNumber(target.bmrKcal ?? 0, i18n.language)} {kcal}
-              </Stat>
-              <Stat label={t('target.tdee')} numeric>
-                {formatNumber(target.tdeeKcal ?? 0, i18n.language)} {kcal}
-              </Stat>
-            </dl>
-          ) : null}
-        </div>
-      ) : null}
+      <div className="flex flex-col gap-3">
+        <Button
+          type="button"
+          variant="link"
+          size="none"
+          className="self-start"
+          aria-expanded={detailsOpen}
+          onClick={() => {
+            setDetailsOpen((open) => !open);
+          }}
+        >
+          {t('target.details')}
+        </Button>
+        {detailsOpen ? (
+          <TargetDetails target={target} body={body} units={units} />
+        ) : null}
+      </div>
       <div className="flex flex-col gap-2">
         <Button
           type="button"

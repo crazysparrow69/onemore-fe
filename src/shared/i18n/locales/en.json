@@ -135,7 +135,9 @@
     "height": "Height must be between 100 and 250 cm",
     "weight": "Enter a weight between 20 and 400 kg",
     "noteMax": "The note can be at most 200 characters",
-    "calories": "Enter calories between 1000 and 6000"
+    "calories": "Enter calories between 1000 and 6000",
+    "protein": "Enter protein between 0.8 and 3 g per kg",
+    "fatShare": "Enter a whole number between 15 and 45"
   },
   "common": {
     "loading": "Loading",
@@ -433,7 +435,13 @@
     "saved": "Saved",
     "next": "Next",
     "edit": "Edit",
-    "cardTitle": "Body"
+    "cardTitle": "Body",
+    "protein": "Protein, g per kg of weight",
+    "fat": "Fat, % of calories",
+    "automatic": "Automatic",
+    "gPerKg": "g/kg",
+    "ownMacrosTitle": "Your own protein and fat (optional)",
+    "ownMacrosHint": "Leave empty and the formula decides: about 1.4-1.8 g/kg of protein for people who train, a little more when losing weight. Well-trained people may want more, up to 3 g/kg. Fat is 25% of calories by default (15-45%)."
   },
   "goal": {
     "title": "Goal",
@@ -496,6 +504,17 @@
     "manualHint": "Protein, fat and carbs are calculated from this number.",
     "manualSaved": "Target saved",
     "autoSaved": "The formula is on again",
-    "inputsMissing": "Fill in your body, goal and weight first."
+    "inputsMissing": "Fill in your body, goal and weight first.",
+    "inputsTitle": "What it is based on",
+    "stepsTitle": "From metabolism to your target",
+    "activityFactor": "Activity factor",
+    "goalAdjustment": "For your goal",
+    "sharesTitle": "Protein, fat and carbs",
+    "proteinPerKg": "Protein: {{value}} {{unit}} of body weight.",
+    "proteinCapped": "Protein is limited to 40% of calories.",
+    "ownMacros": "Your own numbers: protein {{protein}}, fat {{fat}}.",
+    "macroRules": "Fat takes its share of calories, protein is set per kilogram of weight, carbs get the rest.",
+    "manualExplain": "The calories are yours. Protein, fat and carbs are calculated from them with the same rules, using your weight, goal and own numbers.",
+    "disclaimer": "This is a general estimate for healthy adults, not medical advice. Watch your weight trend and adjust."
   }
 }

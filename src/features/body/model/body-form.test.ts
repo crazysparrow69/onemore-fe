@@ -6,6 +6,8 @@ const valid = {
   birthDate: '1995-03-10',
   height: '168,5',
   activityLevel: 'active',
+  protein: '',
+  fat: '',
 };
 
 describe('bodyFormSchema', () => {
@@ -17,7 +19,27 @@ describe('bodyFormSchema', () => {
       birthDate: '1995-03-10',
       heightCm: 168.5,
       activityLevel: 'active',
+      proteinGPerKg: null,
+      fatSharePercent: null,
     });
+  });
+
+  it('takes own protein and fat, with a comma or a dot', () => {
+    expect(
+      schema.parse({ ...valid, protein: '1,45', fat: '30' }),
+    ).toMatchObject({ proteinGPerKg: 1.5, fatSharePercent: 30 });
+    expect(schema.parse({ ...valid, protein: '2.0' })).toMatchObject({
+      proteinGPerKg: 2,
+      fatSharePercent: null,
+    });
+  });
+
+  it.each(['0.7', '3.1', 'lots', '-1'])('rejects the protein %j', (protein) => {
+    expect(schema.safeParse({ ...valid, protein }).success).toBe(false);
+  });
+
+  it.each(['14', '46', '25.5', 'x'])('rejects the fat share %j', (fat) => {
+    expect(schema.safeParse({ ...valid, fat }).success).toBe(false);
   });
 
   it.each(['', 'abc', '99', '251', '-170'])(
@@ -55,6 +77,8 @@ describe('bodyDefaults', () => {
       birthDate: '',
       height: '',
       activityLevel: 'light',
+      protein: '',
+      fat: '',
     });
   });
 
@@ -65,6 +89,8 @@ describe('bodyDefaults', () => {
         birthDate: '1995-03-10',
         heightCm: 168.5,
         activityLevel: 'active',
+        proteinGPerKg: 1.4,
+        fatSharePercent: null,
         updatedAt: '2026-11-27T10:00:00.000Z',
       }),
     ).toEqual({
@@ -72,6 +98,8 @@ describe('bodyDefaults', () => {
       birthDate: '1995-03-10',
       height: '168.5',
       activityLevel: 'active',
+      protein: '1.4',
+      fat: '',
     });
   });
 });

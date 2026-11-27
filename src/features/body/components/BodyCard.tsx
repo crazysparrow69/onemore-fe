@@ -37,6 +37,16 @@ function BodyCard({ body }: { body: Body }) {
         <Stat label={t('body.activity')}>
           {t(`body.activityLevels.${body.activityLevel}`)}
         </Stat>
+        {body.proteinGPerKg !== null ? (
+          <Stat label={t('target.protein')} numeric>
+            {formatNumber(body.proteinGPerKg, i18n.language)} {t('body.gPerKg')}
+          </Stat>
+        ) : null}
+        {body.fatSharePercent !== null ? (
+          <Stat label={t('target.fat')} numeric>
+            {formatNumber(body.fatSharePercent, i18n.language)}%
+          </Stat>
+        ) : null}
       </dl>
     </Card>
   );

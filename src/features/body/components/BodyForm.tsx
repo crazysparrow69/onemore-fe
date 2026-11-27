@@ -111,6 +111,28 @@ function BodyForm({
           {t(`body.activityHints.${activity}`)}
         </Text>
       </div>
+      <div className="flex flex-col gap-3">
+        <Text weight="medium">{t('body.ownMacrosTitle')}</Text>
+        <Text size="xs" tone="muted">
+          {t('body.ownMacrosHint')}
+        </Text>
+        <TextField
+          label={t('body.protein')}
+          inputMode="decimal"
+          autoComplete="off"
+          placeholder={t('body.automatic')}
+          error={fieldError(t, errors.protein?.message)}
+          {...form.register('protein')}
+        />
+        <TextField
+          label={t('body.fat')}
+          inputMode="numeric"
+          autoComplete="off"
+          placeholder={t('body.automatic')}
+          error={fieldError(t, errors.fat?.message)}
+          {...form.register('fat')}
+        />
+      </div>
       <Button
         type="submit"
         fullWidth

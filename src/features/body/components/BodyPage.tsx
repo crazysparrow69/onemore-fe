@@ -76,7 +76,13 @@ function BodyOverview({ units }: { units: Units }) {
           </Button>
         </Card>
       ) : null}
-      {target.data ? <TargetCard target={target.data} /> : null}
+      {target.data ? (
+        <TargetCard
+          target={target.data}
+          body={body.data ?? null}
+          units={units}
+        />
+      ) : null}
       {weight.data ? (
         <WeightSummaryCard latest={weight.data} units={units} />
       ) : null}

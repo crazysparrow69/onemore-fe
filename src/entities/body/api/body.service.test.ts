@@ -28,6 +28,8 @@ const body = {
   birthDate: '1990-05-17',
   heightCm: 180,
   activityLevel: 'moderate',
+  proteinGPerKg: null,
+  fatSharePercent: null,
   updatedAt: '2026-11-27T10:00:00.000Z',
 };
 
@@ -129,6 +131,8 @@ describe('writes', () => {
         birthDate: '1990-05-17',
         heightCm: 180,
         activityLevel: 'moderate',
+        proteinGPerKg: 1.4,
+        fatSharePercent: null,
       },
       '2026-11-27',
       client,
@@ -144,6 +148,8 @@ describe('writes', () => {
       birthDate: '1990-05-17',
       heightCm: 180,
       activityLevel: 'moderate',
+      proteinGPerKg: 1.4,
+      fatSharePercent: null,
       today: '2026-11-27',
     });
     expect(put).toHaveBeenNthCalledWith(2, '/goals/current', {

@@ -19,6 +19,8 @@ export const bodySchema = z.object({
   birthDate: z.string(),
   heightCm: z.number(),
   activityLevel: z.enum(ACTIVITY_LEVELS),
+  proteinGPerKg: z.number().nullable(),
+  fatSharePercent: z.number().nullable(),
   updatedAt: z.string(),
 });
 
@@ -49,6 +51,8 @@ export interface BodyInput {
   birthDate: string;
   heightCm: number;
   activityLevel: ActivityLevel;
+  proteinGPerKg: number | null;
+  fatSharePercent: number | null;
 }
 
 export interface GoalInput {

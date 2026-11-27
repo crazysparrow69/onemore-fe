@@ -15,6 +15,8 @@ const VALIDATION_KEYS = [
   'validation.weight',
   'validation.noteMax',
   'validation.calories',
+  'validation.protein',
+  'validation.fatShare',
 ] as const;
 
 type ValidationKey = (typeof VALIDATION_KEYS)[number];
