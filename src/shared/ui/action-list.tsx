@@ -36,7 +36,7 @@ function ActionItem({
         disabled={disabled}
         onClick={onClick}
         className={cn(
-          'flex w-full items-center gap-3 py-3 text-left text-base outline-none focus-visible:bg-accent disabled:pointer-events-none disabled:opacity-40',
+          '-mx-3 flex w-[calc(100%+1.5rem)] items-center gap-3 rounded-xl px-3 py-3 text-left text-base outline-none hover:bg-accent active:bg-accent focus-visible:bg-accent disabled:pointer-events-none disabled:opacity-40',
           trailing !== undefined && 'justify-between',
           destructive && 'text-destructive',
         )}

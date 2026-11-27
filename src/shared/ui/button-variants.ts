@@ -19,7 +19,7 @@ export const buttonVariants = cva(
         card: 'justify-start bg-card text-foreground font-medium hover:bg-card/80 disabled:opacity-60',
         option:
           'justify-between bg-secondary text-left font-normal whitespace-normal text-foreground hover:bg-secondary/80 aria-pressed:ring-2 aria-pressed:ring-primary aria-invalid:ring-2 aria-invalid:ring-destructive disabled:opacity-60',
-        row: 'justify-start rounded-none text-left font-normal whitespace-normal text-foreground hover:bg-accent aria-pressed:bg-primary/15',
+        row: 'justify-start text-left font-normal whitespace-normal text-foreground hover:bg-accent active:bg-accent aria-pressed:bg-primary/15',
         bare: '',
       },
       size: {
@@ -30,6 +30,7 @@ export const buttonVariants = cva(
         cell: 'h-10 min-h-10 rounded-lg px-0 text-base',
         chip: 'h-auto rounded-full px-4 py-1.5 text-sm',
         auto: 'h-auto min-h-0 rounded-xl px-4 py-3 text-base',
+        row: 'h-auto min-h-0 -mx-3 w-[calc(100%+1.5rem)] rounded-xl px-3 py-2.5 text-base',
         none: 'rounded-none',
       },
       fullWidth: {

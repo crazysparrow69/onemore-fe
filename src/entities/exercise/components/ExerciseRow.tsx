@@ -78,10 +78,9 @@ function ExerciseRow({
         <Button
           type="button"
           variant="row"
-          size="none"
-          fullWidth
+          size="row"
           aria-pressed={pick.selected}
-          className="gap-3 py-2.5"
+          className="gap-3"
           onClick={pick.onToggle}
         >
           {content}
@@ -98,13 +97,7 @@ function ExerciseRow({
           </span>
         </Button>
       ) : (
-        <Button
-          asChild
-          variant="row"
-          size="none"
-          fullWidth
-          className="gap-3 py-2.5"
-        >
+        <Button asChild variant="row" size="row" className="gap-3">
           <Link
             to="/exercises/$exerciseId"
             params={{ exerciseId: exercise.id }}
