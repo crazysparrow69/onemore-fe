@@ -2,6 +2,22 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
+      "source": "/api/body/:path*",
+      "destination": "https://nutrition-service-472424626305.europe-west1.run.app/api/body/:path*"
+    },
+    {
+      "source": "/api/goals/:path*",
+      "destination": "https://nutrition-service-472424626305.europe-west1.run.app/api/goals/:path*"
+    },
+    {
+      "source": "/api/weight/:path*",
+      "destination": "https://nutrition-service-472424626305.europe-west1.run.app/api/weight/:path*"
+    },
+    {
+      "source": "/api/nutrition/:path*",
+      "destination": "https://nutrition-service-472424626305.europe-west1.run.app/api/nutrition/:path*"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://core-service-472424626305.europe-west1.run.app/api/:path*"
     }

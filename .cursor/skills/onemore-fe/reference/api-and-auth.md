@@ -13,7 +13,7 @@ Browser -> Vercel (same domain) -> `vercel.json` rewrites by path prefix -> publ
 
 - Prefixes are by domain: moving a domain to another service changes only `vercel.json` and the Vite proxy, never app code.
 - `/internal/*` is backend-to-backend only. Never call it and never add it to rewrites.
-- Locally the Vite dev server proxies `/api` to `API_URL` (core-service). The browser still calls relative `/api/...`. core-service keeps the `/api` prefix, so nothing is stripped. Keep the proxy and `vercel.json` on the same paths.
+- Locally the Vite dev server proxies `/api/body`, `/api/goals`, `/api/weight` and `/api/nutrition` to `NUTRITION_API_URL` (nutrition-service) and every other `/api` path to `API_URL` (core-service). The browser still calls relative `/api/...`. Both services keep the `/api` prefix, so nothing is stripped. In `vercel.json` the nutrition rewrites come before the general `/api/:path*` rule (the first match wins). Keep the proxy and `vercel.json` on the same paths.
 - Each service exposes `GET /health` (no DB, returns `version`). The web may call it only for the app-open warm-up (rule 15).
 
 ## Contract

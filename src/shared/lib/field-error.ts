@@ -9,6 +9,12 @@ const VALIDATION_KEYS = [
   'validation.nameMax',
   'validation.nickname',
   'validation.nicknameTaken',
+  'validation.date',
+  'validation.age',
+  'validation.height',
+  'validation.weight',
+  'validation.noteMax',
+  'validation.calories',
 ] as const;
 
 type ValidationKey = (typeof VALIDATION_KEYS)[number];

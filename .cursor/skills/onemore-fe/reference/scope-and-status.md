@@ -28,7 +28,7 @@ v0.1 MVP -> v0.2 charts (est. 1RM, records, sets/muscle/week, weight trend) + we
 3 Web base: routing, UI kit, i18n, PWA, analytics (if decided); sign-in via Neon Auth (email + Google); account settings (language, units, time zone, training profile).
 4 Exercises: WebP images in `public/exercises/` (check size); catalog list, search, card; private exercises.
 5 Workouts: record from scratch, local draft, single POST on finish, e2e "record a workout", last-time hints + rest timer, templates, workout from template.
-6 Nutrition: body, goal, weight log; daily target; diary + remaining; autosuggest; full onboarding (profile + body + goal).
+6 Nutrition: body, goal, weight log; daily target; diary + remaining; autosuggest; full onboarding (profile + body + goal). Done in web: body, goal, weight log and the daily target (`features/body`, `entities/body`, `entities/nutrition`; routes `/body`, `/body/setup`, `/body/edit`, `/body/goal`, `/weight`). Left: diary, autosuggest, onboarding (reuse `BodyForm`, `GoalForm`, `WeightForm` from `/body/setup`).
 7 Schedule + month calendar (plan, fact, calories; works without nutrition).
 8 Launch prep: Sentry in web, warm-up `/health` calls on app open, runbook for Vercel rollback.
 9 Real-life MVP check. 10 v0.2+.

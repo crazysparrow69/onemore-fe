@@ -7,7 +7,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 const LAYER_RULES = `Dependencies point down only: app, features, entities, shared.
-Entities: user, media, exercise, training. Features: auth, account, exercises, templates, workouts.`;
+Entities: user, media, exercise, training, nutrition, body. Features: auth, account, exercises, templates, workouts, body.`;
 
 const RAW_ELEMENTS = {
   button:
@@ -26,6 +26,14 @@ const ENTITY_FORBIDS = {
   user: ['entities/exercise', 'entities/training', 'features', 'app'],
   exercise: ['entities/training', 'features', 'app'],
   training: ['features', 'app'],
+  nutrition: [
+    'entities/body',
+    'entities/exercise',
+    'entities/training',
+    'features',
+    'app',
+  ],
+  body: ['entities/exercise', 'entities/training', 'features', 'app'],
 };
 
 const FEATURE_FORBIDS = {
@@ -34,6 +42,7 @@ const FEATURE_FORBIDS = {
     'features/exercises',
     'features/templates',
     'features/workouts',
+    'features/body',
     'app',
   ],
   account: [
@@ -41,6 +50,7 @@ const FEATURE_FORBIDS = {
     'features/exercises',
     'features/templates',
     'features/workouts',
+    'features/body',
     'app',
   ],
   exercises: [
@@ -48,10 +58,25 @@ const FEATURE_FORBIDS = {
     'features/account',
     'features/templates',
     'features/workouts',
+    'features/body',
     'app',
   ],
-  templates: ['features/auth', 'features/account', 'features/workouts', 'app'],
-  workouts: ['features/auth', 'features/account', 'app'],
+  templates: [
+    'features/auth',
+    'features/account',
+    'features/workouts',
+    'features/body',
+    'app',
+  ],
+  workouts: ['features/auth', 'features/account', 'features/body', 'app'],
+  body: [
+    'features/auth',
+    'features/account',
+    'features/exercises',
+    'features/templates',
+    'features/workouts',
+    'app',
+  ],
 };
 
 function restrictImports(forbidden = []) {

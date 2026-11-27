@@ -47,6 +47,7 @@ const cloudName = z.string(required).regex(/^[a-z0-9_-]+$/i, {
 export const envSchema = z.object({
   PORT: port,
   API_URL: httpUrl,
+  NUTRITION_API_URL: httpUrl,
   VITE_NEON_AUTH_URL: httpsUrl,
   VITE_CLOUDINARY_CLOUD_NAME: cloudName,
 });

@@ -4,6 +4,7 @@ import { ENV_KEYS, loadValidatedEnv, validateEnv } from '@/shared/lib/env';
 const valid = {
   PORT: '5002',
   API_URL: 'http://localhost:5001',
+  NUTRITION_API_URL: 'http://localhost:5003',
   VITE_NEON_AUTH_URL: 'https://auth.example.test/neondb/auth',
   VITE_CLOUDINARY_CLOUD_NAME: 'demo',
 };
@@ -13,6 +14,7 @@ describe('validateEnv', () => {
     expect(validateEnv(valid)).toEqual({
       PORT: 5002,
       API_URL: 'http://localhost:5001',
+      NUTRITION_API_URL: 'http://localhost:5003',
       VITE_NEON_AUTH_URL: 'https://auth.example.test/neondb/auth',
       VITE_CLOUDINARY_CLOUD_NAME: 'demo',
     });
@@ -47,6 +49,15 @@ describe('validateEnv', () => {
     (value) => {
       expect(() => validateEnv({ ...valid, API_URL: value })).toThrow(
         /API_URL:/,
+      );
+    },
+  );
+
+  it.each(['', 'not a url', 'ftp://localhost'])(
+    'throws on an invalid NUTRITION_API_URL (%j)',
+    (value) => {
+      expect(() => validateEnv({ ...valid, NUTRITION_API_URL: value })).toThrow(
+        /NUTRITION_API_URL:/,
       );
     },
   );

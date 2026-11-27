@@ -71,6 +71,48 @@ const settingsRoute = createRoute({
   ),
 });
 
+const bodyRoute = createRoute({
+  ...authed,
+  path: '/body',
+  component: lazyRouteComponent(() => import('@/features/body'), 'BodyPage'),
+});
+
+const bodySetupRoute = createRoute({
+  ...authed,
+  path: '/body/setup',
+  component: lazyRouteComponent(
+    () => import('@/features/body'),
+    'BodySetupPage',
+  ),
+});
+
+const bodyEditRoute = createRoute({
+  ...authed,
+  path: '/body/edit',
+  component: lazyRouteComponent(
+    () => import('@/features/body'),
+    'BodyEditPage',
+  ),
+});
+
+const goalEditRoute = createRoute({
+  ...authed,
+  path: '/body/goal',
+  component: lazyRouteComponent(
+    () => import('@/features/body'),
+    'GoalEditPage',
+  ),
+});
+
+const weightRoute = createRoute({
+  ...authed,
+  path: '/weight',
+  component: lazyRouteComponent(
+    () => import('@/features/body'),
+    'WeightLogPage',
+  ),
+});
+
 const exercisesRoute = createRoute({
   ...authed,
   path: '/exercises',
@@ -217,6 +259,11 @@ const routeTree = rootRoute.addChildren([
   profileRoute,
   profileEditRoute,
   settingsRoute,
+  bodyRoute,
+  bodySetupRoute,
+  bodyEditRoute,
+  goalEditRoute,
+  weightRoute,
   exercisesRoute,
   exerciseNewRoute,
   exerciseEditRoute,

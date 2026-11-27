@@ -102,6 +102,10 @@ export default defineConfig(({ mode }) => {
     server: {
       port: env.PORT,
       proxy: {
+        '^/api/(body|goals|weight|nutrition)(/|$)': {
+          target: env.NUTRITION_API_URL,
+          changeOrigin: true,
+        },
         '/api': { target: env.API_URL, changeOrigin: true },
       },
     },

@@ -17,6 +17,7 @@ describe('.env.example', () => {
     expect(Object.fromEntries(pairs)).toEqual({
       PORT: '5002',
       API_URL: 'http://localhost:5001',
+      NUTRITION_API_URL: 'http://localhost:5003',
       VITE_NEON_AUTH_URL:
         'https://example.neonauth.eu-central-1.aws.neon.tech/neondb/auth',
       VITE_CLOUDINARY_CLOUD_NAME: 'demo',

@@ -1,0 +1,10 @@
+export const MIN_DATE = '1900-01-01';
+export const MIN_WEIGHT_DATE = '2000-01-01';
+export const MIN_HEIGHT_CM = 100;
+export const MAX_HEIGHT_CM = 250;
+export const MIN_AGE = 13;
+export const MAX_AGE = 120;
+export const MIN_WEIGHT_KG = 20;
+export const MAX_WEIGHT_KG = 400;
+export const NOTE_MAX_LENGTH = 200;
+export const WEIGHT_WINDOW_DAYS = 30;

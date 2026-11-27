@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router';
-import { Dumbbell, Pencil, Settings } from 'lucide-react';
+import { Dumbbell, Pencil, Scale, Settings } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { initials } from '@/features/account/model/initials';
 import { mediaUrl } from '@/entities/media/model/media-url';
@@ -87,6 +87,18 @@ function ProfilePage() {
         <Link to="/exercises">
           <Dumbbell className="size-6" aria-hidden />
           {t('profile.exercises')}
+        </Link>
+      </Button>
+
+      <Button
+        asChild
+        variant="card"
+        size="auto"
+        className="justify-start gap-3 py-4"
+      >
+        <Link to="/body">
+          <Scale className="size-6" aria-hidden />
+          {t('body.title')}
         </Link>
       </Button>
 
